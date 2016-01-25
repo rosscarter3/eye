@@ -1,4 +1,4 @@
-"""Simple viewer for images in a directory."""
+"""Segmentation correction tool"""
 import os
 import os.path
 import argparse
@@ -37,15 +37,10 @@ class ImageContainer(list):
         if self._current_id < 0:
             self._current_id = len(self) - 1
         
-    def load_images(self, directory, prefix=None):
-        """Load images file paths from a directory."""
-        for fpath in sorted_nicely(os.listdir(directory)):
-            if prefix is not None and not fpath.startswith(prefix):
-                # If a prefix has been defined make sure that only
-                # those files with that prefix are considered.
-                continue
-            if fpath.endswith(".png"):
-                self.append(os.path.join(directory, fpath))
+    def load_images(self, seg_im, base_im):
+		"""Loads the segmented image and the base image"""
+		self.append(os.path.abspath(seg_im))
+		self.append(os.path.abspath(base_im))
 
 class View(object):
     def __init__(self):
@@ -228,10 +223,16 @@ class Viewer(object):
                         self.move_up()
                     if event.key.keysym.sym == sdl2.SDLK_j:
                         self.move_down()
+                    if event.key.keysym.sym == sdl2.SDLK_m:
+                        print "MERGING"
+                        print "Click on Cell1"    
                 if event.type == SDL_MOUSEBUTTONDOWN:
                     if event.button.button == SDL_BUTTON_LEFT:
                         ix, iy = self._view.image_coordinate(event.button.x, event.button.y)
-                        print("x: {}, y: {}".format(ix, iy))
+                        print "x: %i, y: %i"%(ix, iy)
+                        #print sdl2.SDL_GetNumVideoDisplays()
+                        print sdl2.SDL_GetCurrentDisplayMode(1,sdl2.SDL_DisplayMode)
+                        #print sdl2.SDL_DisplayMode._fields_[1][1].__dict__
 
 
         SDL_DestroyWindow(window)
@@ -240,13 +241,13 @@ class Viewer(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input_dir", help="Input directory")
-    parser.add_argument("-p", "--prefix", default=None, help="File name prefix")
+    parser.add_argument("seg_im", help="Segmented Image")
+    parser.add_argument("base_im", help="Base Image")
 
     args = parser.parse_args()
 
     images = ImageContainer()
-    images.load_images(args.input_dir, args.prefix)
+    images.load_images(args.seg_im, args.base_im)
 
     viewer = Viewer(images)
 
