@@ -231,7 +231,7 @@ class Viewer(object):
                         ix, iy = self._view.image_coordinate(event.button.x, event.button.y)
                         print "x: %i, y: %i"%(ix, iy)
                         #print sdl2.SDL_GetNumVideoDisplays()
-                        print sdl2.SDL_GetCurrentDisplayMode(1,sdl2.SDL_DisplayMode)
+                        #print sdl2.SDL_GetCurrentDisplayMode(1,sdl2.SDL_DisplayMode)
                         #print sdl2.SDL_DisplayMode._fields_[1][1].__dict__
 
 

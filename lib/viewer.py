@@ -72,6 +72,10 @@ class View(object):
         offset_w, offset_h = self._offset(org_size, new_size)
         self._x = self._x + offset_w
         self._y = self._y + offset_h
+        if self._x < 0:
+            self._x = 0
+        if self._y < 0:
+            self._y = 0
     
     def image_coordinate(self, wx, wy):
         """Return coordinate in image space."""
