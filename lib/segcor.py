@@ -1,14 +1,19 @@
-"""Segmentation correction tool"""
+"""Segmentation correction tool, modifield from viewer.py"""
 import os
 import os.path
 import argparse
 import re
 
+import ctypes
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import sys
 import ctypes
 from sdl2 import *
 from sdl2.sdlimage import IMG_LoadTexture
 import sdl2.ext
+import datetime as dt 
 
 def sorted_nicely(l):
     convert = lambda text: int(text) if text.isdigit() else text
@@ -36,7 +41,7 @@ class ImageContainer(list):
         self._current_id -= 1
         if self._current_id < 0:
             self._current_id = len(self) - 1
-        
+
     def load_images(self, seg_im, base_im):
 		"""Loads the segmented image and the base image"""
 		self.append(os.path.abspath(seg_im))
@@ -67,7 +72,11 @@ class View(object):
         offset_w, offset_h = self._offset(org_size, new_size)
         self._x = self._x + offset_w
         self._y = self._y + offset_h
-    
+        if self._x < 0:
+            self._x = 0
+        if self._y < 0:
+            self._y = 0
+
     def image_coordinate(self, wx, wy):
         """Return coordinate in image space."""
         mod_factor = self._zoom_level * 2
@@ -75,7 +84,7 @@ class View(object):
             return self._x + wx, self._y + wy
         ix = wx // mod_factor
         iy = wy // mod_factor
-        
+
         return self._x + ix, self._y + iy
 
     def zoom_in(self):
@@ -95,13 +104,12 @@ class View(object):
             self._zoom_level = 0
         new_size = self._sizes[self._zoom_level]
         self._zoom_center(org_size, new_size)
-        
+
     def move_left(self, step=10):
         """Shift view some steps to the left."""
         self._x -= step
         if self._x < 0:
             self._x = 0
-
 
     def move_right(self, step=10):
         """Shift view some steps to the right."""
@@ -128,7 +136,7 @@ class View(object):
 class Viewer(object):
     """Basic viewer."""
 
-    def __init__(self, images):
+    def __init__(self, images, numpy, directory):
         self._images = images
         self._view = View()
         SDL_Init(SDL_INIT_VIDEO)
@@ -140,13 +148,18 @@ class Viewer(object):
         self.display_rect = SDL_Rect(0, 0, 2048, 2048)
         self.zoom_rect = SDL_Rect(0, 0, 2048, 2048)
         self.update_image()
+        self.numpy = numpy
+	self.directory = directory
+	self.fn = 'merges{}.txt'.format( dt.datetime.now().strftime('%Y%m%d%H%M%S') )
+	self.fp = os.path.join(self.directory,self.fn)
+        self.set_id_array()
         self.run()
-
+	
     def update_zoom(self):
         """Update the zoom box."""
         x, y, (w, h) = self._view.current()
         self.zoom_rect = SDL_Rect(x, y, w, h)
-        
+
     def update_image(self):
         """Display the next image and update the window title."""
         self.update_zoom()
@@ -157,16 +170,22 @@ class Viewer(object):
         SDL_RenderCopy(self.renderer, texture, self.zoom_rect, self.display_rect)
         SDL_RenderPresent(self.renderer)
 
+    def set_id_array(self):
+	"""Initialise numpy array of cids """
+	ar = self.numpy
+        id_array = np.zeros_like(ar, dtype=np.uint32)
+	self.id_array = ar[:,:,2] + 256 * ar[:, :, 1] + 256 * 256 * ar[:, :, 0]
+
     def next(self):
         """Display the next image."""
         self._images.next()
         self.update_image()
-    
+
     def prev(self):
-        """Display the prvious image."""
+        """Display the previous image."""
         self._images.prev()
         self.update_image()
-        
+
     def zoom_in(self):
         """Zoom in on the image."""
         self._view.zoom_in()
@@ -197,6 +216,74 @@ class Viewer(object):
         self._view.move_down()
         self.update_image()
 
+    def set_cell1(self):
+	x, y = ctypes.c_int(0), ctypes.c_int(0)
+	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+	self.cell1 = self.numpy[y.value,x.value]
+	self.c1id = cid_from_RGB(self.cell1)
+	print "cell1 cid: ", self.c1id
+
+    def set_cell2(self):
+	x, y = ctypes.c_int(0), ctypes.c_int(0)
+	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+	self.cell2 = self.numpy[y.value,x.value]
+	self.c2id = cid_from_RGB(self.cell2)
+	print "cell2 cid: ", self.c2id
+
+    def set_bcell(self):
+	x, y = ctypes.c_int(0), ctypes.c_int(0)
+	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+	self.bcell = self.numpy[y.value,x.value]
+	self.bcid =  cid_from_RGB(self.bcell)
+	
+
+    def mergecells(self,cell1id,cell2id):
+	print "Merging... "
+	def get_mask(array, color_index):
+	    y, x, z = self.numpy.shape
+	    mask = np.zeros((y, x), dtype=bool)
+	    mask[np.where(self.numpy[:,:,color_index] == cell2id[color_index])] = True
+	    return mask
+
+	red_mask = get_mask(self.numpy, 0)
+	green_mask = get_mask(self.numpy, 1)
+	blue_mask = get_mask(self.numpy, 2)
+
+	mask = np.logical_and(red_mask, green_mask)
+	mask = np.logical_and(mask, blue_mask)
+
+	self.numpy[mask,:] = cell1id
+	mpimg.imsave(os.path.join(self.directory,'0seg_temp.png'), self.numpy)
+	
+	outstring = "%i + %i = %i\n"%(self.c1id, self.c2id, self.c1id)
+	print outstring
+	with open(self.fp, "a") as op:
+	    op.write(outstring)
+	    
+	print "Done"
+
+    def set_to_background(self,bcell):
+	def get_mask(array, color_index):
+	    y, x, _ = self.numpy.shape
+	    mask = np.zeros((y, x), dtype=bool)
+	    mask[np.where(self.numpy[:,:,color_index] == bcell[color_index])] = True
+	    return mask
+
+	red_mask = get_mask(self.numpy, 0)
+	green_mask = get_mask(self.numpy, 1)
+	blue_mask = get_mask(self.numpy, 2)
+
+	mask = np.logical_and(red_mask, green_mask)
+	mask = np.logical_and(mask, blue_mask)
+
+	self.numpy[mask] = [0,0,0]
+	print "cell: ", self.bcid, "set to [0,0,0]"
+	outstring = "%i = bg\n"%(self.bcid)
+	with open(self.fp, "a") as op:
+	    op.write(outstring)
+	    
+	mpimg.imsave(os.path.join(self.directory,'0seg_temp.png'), self.numpy)
+
     def run(self):
         """Run the application."""
         running = True
@@ -223,32 +310,51 @@ class Viewer(object):
                         self.move_up()
                     if event.key.keysym.sym == sdl2.SDLK_j:
                         self.move_down()
+
+		    if event.key.keysym.sym == sdl2.SDLK_1:
+                        self.set_cell1()
+		    if event.key.keysym.sym == sdl2.SDLK_2:
+                        self.set_cell2()
+
+		    if event.key.keysym.sym == sdl2.SDLK_b:
+                        self.set_bcell()
+			self.set_to_background(self.bcell)
+
                     if event.key.keysym.sym == sdl2.SDLK_m:
-                        print "MERGING"
-                        print "Click on Cell1"    
+                        self.mergecells(self.cell1,self.cell2)
+			
+
+#		    if event.key.keysym.sym == sdl2.SDLK_q:
+#			running = False
+
                 if event.type == SDL_MOUSEBUTTONDOWN:
                     if event.button.button == SDL_BUTTON_LEFT:
                         ix, iy = self._view.image_coordinate(event.button.x, event.button.y)
-                        print "x: %i, y: %i"%(ix, iy)
-                        #print sdl2.SDL_GetNumVideoDisplays()
-                        #print sdl2.SDL_GetCurrentDisplayMode(1,sdl2.SDL_DisplayMode)
-                        #print sdl2.SDL_DisplayMode._fields_[1][1].__dict__
+                        print "x: %i, y: %i, cid: "%(ix, iy)#, self.id_array[ix,iy]
 
 
         SDL_DestroyWindow(window)
         SDL_Quit()
         return 0
 
+def cid_from_RGB(RGB):
+    cid = RGB[2] + 256 * RGB[1] + 256 * 256 * RGB[0] 
+    return int(cid)
+    
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("seg_im", help="Segmented Image")
-    parser.add_argument("base_im", help="Base Image")
+	parser = argparse.ArgumentParser(description=__doc__)
+	parser.add_argument("seg_im", help="Segmented Image")
+	parser.add_argument("base_im", help="Base Image")
 
-    args = parser.parse_args()
+	args = parser.parse_args()
 
-    images = ImageContainer()
-    images.load_images(args.seg_im, args.base_im)
+	images = ImageContainer()
+	images.load_images(args.seg_im, args.base_im)
+	
+	directory = os.path.commonprefix([args.seg_im, args.base_im])
 
-    viewer = Viewer(images)
+	numpy = mpimg.imread(args.seg_im)
+	
+	viewer = Viewer(images,numpy,directory)
 
-    sys.exit(viewer.run())
+	sys.exit(viewer.run())
