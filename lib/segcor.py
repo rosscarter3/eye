@@ -239,8 +239,14 @@ class Viewer(object):
 
     def mergecells(self,cell1id,cell2id):
 	print "Merging... "
+	
+	outstring = "%s -> %s\n"%(np.array_str(cell2id), np.array_str(cell1id))
+	print outstring
+	with open(self.fp, "a") as op:
+	    op.write(outstring)
+	
 	def get_mask(array, color_index):
-	    y, x, z = self.numpy.shape
+	    y, x, _ = self.numpy.shape
 	    mask = np.zeros((y, x), dtype=bool)
 	    mask[np.where(self.numpy[:,:,color_index] == cell2id[color_index])] = True
 	    return mask
@@ -254,15 +260,16 @@ class Viewer(object):
 
 	self.numpy[mask,:] = cell1id
 	mpimg.imsave(os.path.join(self.directory,'0seg_temp.png'), self.numpy)
-	
-	outstring = "%i + %i = %i\n"%(self.c1id, self.c2id, self.c1id)
-	print outstring
-	with open(self.fp, "a") as op:
-	    op.write(outstring)
 	    
 	print "Done"
 
     def set_to_background(self,bcell):
+	
+	print "cell: ", self.bcid, "set to [0,0,0]"
+	outstring = "%s -> [ 0, 0, 0]\n"%(np.array_str(self.bcell))
+	with open(self.fp, "a") as op:
+	    op.write(outstring)
+	
 	def get_mask(array, color_index):
 	    y, x, _ = self.numpy.shape
 	    mask = np.zeros((y, x), dtype=bool)
@@ -277,10 +284,6 @@ class Viewer(object):
 	mask = np.logical_and(mask, blue_mask)
 
 	self.numpy[mask] = [0,0,0]
-	print "cell: ", self.bcid, "set to [0,0,0]"
-	outstring = "%i = bg\n"%(self.bcid)
-	with open(self.fp, "a") as op:
-	    op.write(outstring)
 	    
 	mpimg.imsave(os.path.join(self.directory,'0seg_temp.png'), self.numpy)
 
