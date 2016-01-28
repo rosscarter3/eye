@@ -46,12 +46,17 @@ class ImageContainer(list):
 		"""Loads the segmented image and the base image"""
 		self.append(os.path.abspath(seg_im))
 		self.append(os.path.abspath(base_im))
+    
+    def update_current(self, new_path):
+	"""Replace the current file path with a new one."""
+	self[self._current_id] = os.path.abspath(new_path)
 
 class View(object):
-    def __init__(self):
+    def __init__(self, windowx, windowy):
         self._zoom_level = 0
-        self._sizes = [(2048, 2048), (1024, 1024), (512, 512)]
-#       self._sizes = [(500, 500), (400, 400), (300, 300), (100, 100)]
+	self.windowx = windowx
+	self.windowy = windowy
+        self._sizes = [(self.windowx, self.windowy), (self.windowx/2, self.windowy/2), (self.windowx/4, self.windowy/4)]
         self._x = 0
         self._y = 0
 
@@ -115,7 +120,7 @@ class View(object):
         """Shift view some steps to the right."""
         self._x += step
         zoom_width = self._sizes[self._zoom_level][0]
-        move_span = 2048 - zoom_width
+        move_span = self.windowx - zoom_width
         if self._x > move_span:
             self._x = move_span
 
@@ -129,7 +134,7 @@ class View(object):
         """Shift view some steps down."""
         self._y += step
         zoom_height = self._sizes[self._zoom_level][1]
-        move_span = 2048 - zoom_height
+        move_span = self.windowy - zoom_height
         if self._y > move_span:
             self._y = move_span
 
@@ -138,21 +143,22 @@ class Viewer(object):
 
     def __init__(self, images, numpy, directory):
         self._images = images
-        self._view = View()
+        self._view = View(2048,2048)
         SDL_Init(SDL_INIT_VIDEO)
         self.window = SDL_CreateWindow(b"Image Viewer",
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              2048, 2048, SDL_WINDOW_SHOWN)
+                              self._view.windowx, self._view.windowy, SDL_WINDOW_SHOWN)
 
         self.renderer = SDL_CreateRenderer(self.window, -1, 0)
-        self.display_rect = SDL_Rect(0, 0, 2048, 2048)
-        self.zoom_rect = SDL_Rect(0, 0, 2048, 2048)
+        self.display_rect = SDL_Rect(0, 0, self._view.windowx, self._view.windowy)
+        self.zoom_rect = SDL_Rect(0, 0, self._view.windowx, self._view.windowy)
         self.update_image()
         self.numpy = numpy
 	self.directory = directory
-	self.fn = 'merges{}.txt'.format( dt.datetime.now().strftime('%Y%m%d%H%M%S') )
+	self.fn = 'merges_{}.txt'.format( dt.datetime.now().strftime('%Y%m%d%H%M%S') )
+	image_name = os.path.basename(self._images[0])
+	self.im_name = '{}_corrected_{}.png'.format( image_name, dt.datetime.now().strftime('%Y%m%d%H%M%S') )
 	self.fp = os.path.join(self.directory,self.fn)
-        self.set_id_array()
         self.run()
 	
     def update_zoom(self):
@@ -162,19 +168,24 @@ class Viewer(object):
 
     def update_image(self):
         """Display the next image and update the window title."""
-        self.update_zoom()
+        
         fpath = self._images.current()
         SDL_SetWindowTitle(self.window, b"Image Viewer: {}".format(os.path.basename(fpath)))
         texture = IMG_LoadTexture(self.renderer, fpath)
+	
+	iW = ctypes.pointer(ctypes.c_int(0))
+	iH = ctypes.pointer(ctypes.c_int(0))
+	
+	SDL_QueryTexture(texture,None,None,iW,iH)
+	self.im_w, self.im_h =iW.contents.value, iH.contents.value
+	
+	as_ratio = float(self.im_w)/float(self.im_h)
+	print as_ratio
+	
+	self.update_zoom()
         SDL_RenderClear(self.renderer)
         SDL_RenderCopy(self.renderer, texture, self.zoom_rect, self.display_rect)
         SDL_RenderPresent(self.renderer)
-
-    def set_id_array(self):
-	"""Initialise numpy array of cids """
-	ar = self.numpy
-        id_array = np.zeros_like(ar, dtype=np.uint32)
-	self.id_array = ar[:,:,2] + 256 * ar[:, :, 1] + 256 * 256 * ar[:, :, 0]
 
     def next(self):
         """Display the next image."""
@@ -258,14 +269,19 @@ class Viewer(object):
 	mask = np.logical_and(red_mask, green_mask)
 	mask = np.logical_and(mask, blue_mask)
 
-	self.numpy[mask,:] = cell1id
-	mpimg.imsave(os.path.join(self.directory,'0seg_temp.png'), self.numpy)
+	self.numpy[mask,] = cell1id
+	
+	merge_path = os.path.join(self.directory, self.im_name)
+	mpimg.imsave(merge_path, self.numpy)
+	
+	self._images.update_current(merge_path)
+	self.update_image()
 	    
 	print "Done"
 
     def set_to_background(self,bcell):
 	
-	print "cell: ", self.bcid, "set to [0,0,0]"
+	print "cell: ", self.bcid, "set to [0. 0. 0.]"
 	outstring = "%s -> [ 0, 0, 0]\n"%(np.array_str(self.bcell))
 	with open(self.fp, "a") as op:
 	    op.write(outstring)
@@ -285,7 +301,11 @@ class Viewer(object):
 
 	self.numpy[mask] = [0,0,0]
 	    
-	mpimg.imsave(os.path.join(self.directory,'0seg_temp.png'), self.numpy)
+	merge_path = os.path.join(self.directory, self.im_name)
+	mpimg.imsave(merge_path, self.numpy)
+	
+	self._images.update_current(merge_path)
+	self.update_image()
 
     def run(self):
         """Run the application."""
@@ -325,10 +345,6 @@ class Viewer(object):
 
                     if event.key.keysym.sym == sdl2.SDLK_m:
                         self.mergecells(self.cell1,self.cell2)
-			
-
-#		    if event.key.keysym.sym == sdl2.SDLK_q:
-#			running = False
 
                 if event.type == SDL_MOUSEBUTTONDOWN:
                     if event.button.button == SDL_BUTTON_LEFT:
@@ -336,8 +352,8 @@ class Viewer(object):
                         print "x: %i, y: %i, cid: "%(ix, iy)#, self.id_array[ix,iy]
 
 
-        SDL_DestroyWindow(window)
-        SDL_Quit()
+        SDL_DestroyWindow(self.window)
+	sdl2.ext.quit()
         return 0
 
 def cid_from_RGB(RGB):
@@ -356,8 +372,7 @@ if __name__ == "__main__":
 	
 	directory = os.path.commonprefix([args.seg_im, args.base_im])
 
+	# use PIL
 	numpy = mpimg.imread(args.seg_im)
 	
 	viewer = Viewer(images,numpy,directory)
-
-	sys.exit(viewer.run())
