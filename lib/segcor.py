@@ -52,11 +52,11 @@ class ImageContainer(list):
 	self[self._current_id] = os.path.abspath(new_path)
 
 class View(object):
-    def __init__(self, windowx, windowy):
+    def __init__(self, wx, wy):
         self._zoom_level = 0
-	self.windowx = windowx
-	self.windowy = windowy
-        self._sizes = [(self.windowx, self.windowy), (self.windowx/2, self.windowy/2), (self.windowx/4, self.windowy/4)]
+	self.windowx = wx
+	self.windowy = wy
+        self._sizes = [(wx, wy), (wx/2, wy/2), (wx/4, wy/4)]
         self._x = 0
         self._y = 0
 
@@ -173,14 +173,13 @@ class Viewer(object):
         SDL_SetWindowTitle(self.window, b"Image Viewer: {}".format(os.path.basename(fpath)))
         texture = IMG_LoadTexture(self.renderer, fpath)
 	
-	iW = ctypes.pointer(ctypes.c_int(0))
-	iH = ctypes.pointer(ctypes.c_int(0))
+	#iW = ctypes.pointer(ctypes.c_int(0))
+	#iH = ctypes.pointer(ctypes.c_int(0))
 	
-	SDL_QueryTexture(texture,None,None,iW,iH)
-	self.im_w, self.im_h =iW.contents.value, iH.contents.value
+	#SDL_QueryTexture(texture,None,None,iW,iH)
+	#self.im_w, self.im_h =iW.contents.value, iH.contents.value
 	
-	as_ratio = float(self.im_w)/float(self.im_h)
-	print as_ratio
+	#as_ratio = float(self.im_w)/float(self.im_h)
 	
 	self.update_zoom()
         SDL_RenderClear(self.renderer)
@@ -230,21 +229,28 @@ class Viewer(object):
     def set_cell1(self):
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
-	self.cell1 = self.numpy[y.value,x.value]
+	
+	ix, iy = self._view.image_coordinate(x.value, y.value)
+	
+	self.cell1 = self.numpy[iy,ix]
 	self.c1id = cid_from_RGB(self.cell1)
 	print "cell1 cid: ", self.c1id
 
     def set_cell2(self):
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
-	self.cell2 = self.numpy[y.value,x.value]
+	ix, iy = self._view.image_coordinate(x.value, y.value)
+	
+	self.cell2 = self.numpy[iy,ix]
 	self.c2id = cid_from_RGB(self.cell2)
 	print "cell2 cid: ", self.c2id
 
     def set_bcell(self):
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
-	self.bcell = self.numpy[y.value,x.value]
+	ix, iy = self._view.image_coordinate(x.value, y.value)
+	
+	self.bcell = self.numpy[iy,ix]
 	self.bcid =  cid_from_RGB(self.bcell)
 	
 
@@ -352,7 +358,7 @@ class Viewer(object):
                 if event.type == SDL_MOUSEBUTTONDOWN:
                     if event.button.button == SDL_BUTTON_LEFT:
                         ix, iy = self._view.image_coordinate(event.button.x, event.button.y)
-                        print "x: %i, y: %i, cid: "%(ix, iy)#, self.id_array[ix,iy]
+                        print "x: %i, y: %i, cid: %i"%(ix, iy, cid_from_RGB(self.numpy[iy,ix]))
 
 
         SDL_DestroyWindow(self.window)
