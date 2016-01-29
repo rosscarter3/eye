@@ -3,14 +3,16 @@ import os, sys, argparse
 import re
 
 import numpy as np
-import matplotlib.image as mpimg
+from PIL import Image
 
-class Image(object):
-    """Image"""
+class Corrector(object):
+    """Image Corrector"""
     def __init__(self,image,corr_file):
 	self.image = image
 	self.corr_file = corr_file
-	self.im_arr = mpimg.imread(self.image)
+	
+	img = Image.open(self.image)
+	self.im_arr = np.array(img)
 	
 	im_name = os.path.basename(self.image)
 	im_path = os.path.dirname(self.image)
@@ -35,7 +37,7 @@ class Image(object):
 	
     def save_image(self):
 	"""saves image"""
-	mpimg.imsave(self.outpath, self.im_arr)
+	Image.fromarray(self.im_arr).save(self.outpath)
 
 def parse_line(string):
     """parses lines from read merges file"""
@@ -66,7 +68,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    cor_im = Image(args.seg_im,args.corr)
+    cor_im = Corrector(args.seg_im,args.corr)
     cor_im.correct_image()
     cor_im.save_image()
     

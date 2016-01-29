@@ -4,15 +4,15 @@ import os.path
 import argparse
 import re
 
-import ctypes
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+from PIL import Image
 import sys
+
 import ctypes
 from sdl2 import *
 from sdl2.sdlimage import IMG_LoadTexture
 import sdl2.ext
+
 import datetime as dt 
 
 def sorted_nicely(l):
@@ -272,7 +272,9 @@ class Viewer(object):
 	self.numpy[mask,] = cell1id
 	
 	merge_path = os.path.join(self.directory, self.im_name)
-	mpimg.imsave(merge_path, self.numpy)
+	
+	im = Image.fromarray(self.numpy)
+	im.save(merge_path)
 	
 	self._images.update_current(merge_path)
 	self.update_image()
@@ -281,7 +283,7 @@ class Viewer(object):
 
     def set_to_background(self,bcell):
 	
-	print "cell: ", self.bcid, "set to [0. 0. 0.]"
+	print "cell: ", self.bcid, "set to [0  0  0]"
 	outstring = "%s -> [ 0, 0, 0]\n"%(np.array_str(self.bcell))
 	with open(self.fp, "a") as op:
 	    op.write(outstring)
@@ -302,7 +304,8 @@ class Viewer(object):
 	self.numpy[mask] = [0,0,0]
 	    
 	merge_path = os.path.join(self.directory, self.im_name)
-	mpimg.imsave(merge_path, self.numpy)
+	im = Image.fromarray(self.numpy)
+	im.save(merge_path)
 	
 	self._images.update_current(merge_path)
 	self.update_image()
@@ -373,6 +376,7 @@ if __name__ == "__main__":
 	directory = os.path.commonprefix([args.seg_im, args.base_im])
 
 	# use PIL
-	numpy = mpimg.imread(args.seg_im)
+	img = Image.open(args.seg_im)
+	numpy = np.array(img)
 	
 	viewer = Viewer(images,numpy,directory)
