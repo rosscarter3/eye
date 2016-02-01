@@ -53,10 +53,12 @@ class ImageContainer(list):
 	self[self._current_id] = os.path.abspath(new_path)
 
 class View(object):
-    def __init__(self, wx, wy):
+    def __init__(self, wx, wy, imx, imy):
         self._zoom_level = 0
 	self.windowx = wx
 	self.windowy = wy
+	self.imy = imy
+	self.imx = imx
         self._sizes = [(wx, wy), (wx/2, wy/2), (wx/4, wy/4)]
         self._x = 0
         self._y = 0
@@ -121,7 +123,8 @@ class View(object):
         """Shift view some steps to the right."""
         self._x += step
         zoom_width = self._sizes[self._zoom_level][0]
-        move_span = self.windowx - zoom_width
+        #move_span = self.windowx - zoom_width
+	move_span = self.imx - zoom_width
         if self._x > move_span:
             self._x = move_span
 
@@ -135,7 +138,8 @@ class View(object):
         """Shift view some steps down."""
         self._y += step
         zoom_height = self._sizes[self._zoom_level][1]
-        move_span = self.windowy - zoom_height
+        #move_span = self.windowy - zoom_height
+	move_span = self.imy - zoom_height
         if self._y > move_span:
             self._y = move_span
 
@@ -144,7 +148,7 @@ class Viewer(object):
 
     def __init__(self, images, numpy, directory):
         self._images = images
-        self._view = View(2048,2048)
+        self._view = View(1024,1024,numpy.shape[1],numpy.shape[0])
         SDL_Init(SDL_INIT_VIDEO)
         self.window = SDL_CreateWindow(b"Image Viewer",
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -173,15 +177,6 @@ class Viewer(object):
         fpath = self._images.current()
         SDL_SetWindowTitle(self.window, b"Image Viewer: {}".format(os.path.basename(fpath)))
         texture = IMG_LoadTexture(self.renderer, fpath)
-	
-	# TODO Stuff for managing window size
-	#iW = ctypes.pointer(ctypes.c_int(0))
-	#iH = ctypes.pointer(ctypes.c_int(0))
-	
-	#SDL_QueryTexture(texture,None,None,iW,iH)
-	#self.im_w, self.im_h =iW.contents.value, iH.contents.value
-	
-	#as_ratio = float(self.im_w)/float(self.im_h)
 	
 	self.update_zoom()
         SDL_RenderClear(self.renderer)

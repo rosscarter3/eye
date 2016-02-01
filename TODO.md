@@ -1,6 +1,9 @@
 # EYE
 ## TODO
 
-- Screen sizes and default iamge magnification etc. with SDL
+- More pleasing colour scheme
+- Screen sizes
+- Tests?
 
 ## DONE
+- ~~**DONE** default image magnification etc. with SDL~~
