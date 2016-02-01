@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""Segmentation correction tool, modifield from viewer.py"""
+"""Segmentation correction tool, modifield from viewer.py.
+    View README.md for details"""
 import os
 import os.path
 import argparse
@@ -113,13 +114,13 @@ class View(object):
         new_size = self._sizes[self._zoom_level]
         self._zoom_center(org_size, new_size)
 
-    def move_left(self, step=10):
+    def move_left(self, step=20):
         """Shift view some steps to the left."""
         self._x -= step
         if self._x < 0:
             self._x = 0
 
-    def move_right(self, step=10):
+    def move_right(self, step=20):
         """Shift view some steps to the right."""
         self._x += step
         zoom_width = self._sizes[self._zoom_level][0]
@@ -128,13 +129,13 @@ class View(object):
         if self._x > move_span:
             self._x = move_span
 
-    def move_up(self, step=10):
+    def move_up(self, step=20):
         """Shift view some steps up."""
         self._y -= step
         if self._y < 0:
             self._y = 0
 
-    def move_down(self, step=10):
+    def move_down(self, step=20):
         """Shift view some steps down."""
         self._y += step
         zoom_height = self._sizes[self._zoom_level][1]
@@ -322,6 +323,17 @@ class Viewer(object):
         running = True
         event = SDL_Event()
         while running:
+	    
+	    keystate = SDL_GetKeyboardState(None)
+	    if keystate[sdl2.SDL_SCANCODE_L]:
+		self.move_right()
+	    if keystate[sdl2.SDL_SCANCODE_H]:
+		self.move_left()
+	    if keystate[sdl2.SDL_SCANCODE_K]:
+		self.move_up()
+	    if keystate[sdl2.SDL_SCANCODE_J]:
+		self.move_down()
+	    
             while SDL_PollEvent(ctypes.byref(event)) != 0:
                 if event.type == SDL_QUIT:
                     running = False
@@ -335,14 +347,6 @@ class Viewer(object):
                         self.zoom_in()
                     if event.key.keysym.sym == sdl2.SDLK_DOWN:
                         self.zoom_out()
-                    if event.key.keysym.sym == sdl2.SDLK_l:
-                        self.move_right()
-                    if event.key.keysym.sym == sdl2.SDLK_h:
-                        self.move_left()
-                    if event.key.keysym.sym == sdl2.SDLK_k:
-                        self.move_up()
-                    if event.key.keysym.sym == sdl2.SDLK_j:
-                        self.move_down()
 
 		    if event.key.keysym.sym == sdl2.SDLK_1:
                         self.set_cell1()
@@ -355,6 +359,12 @@ class Viewer(object):
 
                     if event.key.keysym.sym == sdl2.SDLK_m:
                         self.mergecells(self.cell1,self.cell2)
+		
+		if event.type == SDL_MOUSEWHEEL:
+		    if event.wheel.y > 0:
+			self.zoom_in()
+		    if event.wheel.y < 0:
+			self.zoom_out()
 
                 if event.type == SDL_MOUSEBUTTONDOWN:
                     if event.button.button == SDL_BUTTON_LEFT:

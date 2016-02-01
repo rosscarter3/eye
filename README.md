@@ -8,19 +8,19 @@
 # Apply Corrections
 `/lib/apply_corrections.py`
 
-# Keyboard Commands
+# Commands
 
-| Key  | Command                | Notes                                                     |
-| ---- | ---------------------- | --------------------------------------------------------- |
-| up   | Zoom In                |                                                           |
-| down | Zoom Out               |                                                           |
-| left | Previous Image         |                                                           |
-| right| Next Image             |                                                           |
-| h    | Move Left              |                                                           |
-| j    | Move Up                |                                                           |
-| k    | Move Down              |                                                           |
-| l    | Move Right             |                                                           |
-| 1    | Select Cell 1          | (segcor only) Cell under mouse pointer                    |
-| 2    | Select Cell 2          | (segcor only) Cell under mouse pointer                    |
-| m    | Merge cells 1 and 2    | (segcor only) Changes colour of cell 2 to colour of cell 1|
-| b    | Set cell to background | (segcor only) Change cell under mouse pointer to black    |
+| Key                | Command                | Notes                                       |
+| ------------------ | ---------------------- | ------------------------------------------- |
+| up / scroll up     | Zoom In                |                                             |
+| down / scroll down | Zoom Out               |                                             |
+| left               | Previous Image         |                                             |
+| right              | Next Image             |                                             |
+| h                  | Move Left              |                                             |
+| j                  | Move Up                |                                             |
+| k                  | Move Down              |                                             |
+| l                  | Move Right             |                                             |
+| 1                  | Select Cell 1          | Cell under mouse pointer                    |
+| 2                  | Select Cell 2          | Cell under mouse pointer                    |
+| m                  | Merge cells 1 and 2    | Changes colour of cell 2 to colour of cell 1|
+| b                  | Set cell to background | Change cell under mouse pointer to black    |
