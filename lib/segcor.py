@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Segmentation correction tool, modifield from viewer.py"""
 import os
 import os.path
@@ -173,6 +174,7 @@ class Viewer(object):
         SDL_SetWindowTitle(self.window, b"Image Viewer: {}".format(os.path.basename(fpath)))
         texture = IMG_LoadTexture(self.renderer, fpath)
 	
+	# TODO Stuff for managing window size
 	#iW = ctypes.pointer(ctypes.c_int(0))
 	#iH = ctypes.pointer(ctypes.c_int(0))
 	
@@ -227,6 +229,7 @@ class Viewer(object):
         self.update_image()
 
     def set_cell1(self):
+	""" sets cell under the cursor to cell1"""
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
 	
@@ -237,6 +240,7 @@ class Viewer(object):
 	print "cell1 cid: ", self.c1id
 
     def set_cell2(self):
+	""" sets cell under the cursor to cell2"""
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
 	ix, iy = self._view.image_coordinate(x.value, y.value)
@@ -246,6 +250,7 @@ class Viewer(object):
 	print "cell2 cid: ", self.c2id
 
     def set_bcell(self):
+	""" sets cell under the cursor to bcell"""
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
 	ix, iy = self._view.image_coordinate(x.value, y.value)
@@ -255,6 +260,7 @@ class Viewer(object):
 	
 
     def mergecells(self,cell1id,cell2id):
+	""" sets cell selected by set_cell2 to colour of cell selected by set cell 1 """
 	print "Merging... "
 	
 	outstring = "%s -> %s\n"%(np.array_str(cell2id), np.array_str(cell1id))
@@ -288,7 +294,7 @@ class Viewer(object):
 	print "Done"
 
     def set_to_background(self,bcell):
-	
+	""" sets cell selected by set_bcell to black """
 	print "cell: ", self.bcid, "set to [0  0  0]"
 	outstring = "%s -> [ 0, 0, 0]\n"%(np.array_str(self.bcell))
 	with open(self.fp, "a") as op:
@@ -366,6 +372,7 @@ class Viewer(object):
         return 0
 
 def cid_from_RGB(RGB):
+    """ Generates unique ID from RGB values """
     cid = RGB[2] + 256 * RGB[1] + 256 * 256 * RGB[0] 
     return int(cid)
     
@@ -380,8 +387,7 @@ if __name__ == "__main__":
 	images.load_images(args.seg_im, args.base_im)
 	
 	directory = os.path.commonprefix([args.seg_im, args.base_im])
-
-	# use PIL
+	
 	img = Image.open(args.seg_im)
 	numpy = np.array(img)
 	

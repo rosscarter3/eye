@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 """applies corrections generated from segcor.py"""
+
 import os, sys, argparse
 import re
 
