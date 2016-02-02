@@ -114,13 +114,13 @@ class View(object):
         new_size = self._sizes[self._zoom_level]
         self._zoom_center(org_size, new_size)
 
-    def move_left(self, step=20):
+    def move_left(self, step=40):
         """Shift view some steps to the left."""
         self._x -= step
         if self._x < 0:
             self._x = 0
 
-    def move_right(self, step=20):
+    def move_right(self, step=40):
         """Shift view some steps to the right."""
         self._x += step
         zoom_width = self._sizes[self._zoom_level][0]
@@ -129,13 +129,13 @@ class View(object):
         if self._x > move_span:
             self._x = move_span
 
-    def move_up(self, step=20):
+    def move_up(self, step=40):
         """Shift view some steps up."""
         self._y -= step
         if self._y < 0:
             self._y = 0
 
-    def move_down(self, step=20):
+    def move_down(self, step=40):
         """Shift view some steps down."""
         self._y += step
         zoom_height = self._sizes[self._zoom_level][1]
@@ -149,7 +149,7 @@ class Viewer(object):
 
     def __init__(self, images, numpy, directory):
         self._images = images
-        self._view = View(1024,1024,numpy.shape[1],numpy.shape[0])
+        self._view = View(1536,1024,numpy.shape[1],numpy.shape[0])
         SDL_Init(SDL_INIT_VIDEO)
         self.window = SDL_CreateWindow(b"Image Viewer",
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -375,6 +375,24 @@ class Viewer(object):
         SDL_DestroyWindow(self.window)
 	sdl2.ext.quit()
         return 0
+	
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("seg_im", help="Segmented Image")
+    parser.add_argument("base_im", help="Base Image")
+
+    args = parser.parse_args()
+
+    images = ImageContainer()
+    images.load_images(args.seg_im, args.base_im)
+	
+    directory = os.path.commonprefix([args.seg_im, args.base_im])
+	
+    img = Image.open(args.seg_im)
+    numpy = np.array(img)
+	
+    viewer = Viewer(images,numpy,directory)
+    return 0
 
 def cid_from_RGB(RGB):
     """ Generates unique ID from RGB values """
@@ -382,18 +400,5 @@ def cid_from_RGB(RGB):
     return int(cid)
     
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description=__doc__)
-	parser.add_argument("seg_im", help="Segmented Image")
-	parser.add_argument("base_im", help="Base Image")
-
-	args = parser.parse_args()
-
-	images = ImageContainer()
-	images.load_images(args.seg_im, args.base_im)
-	
-	directory = os.path.commonprefix([args.seg_im, args.base_im])
-	
-	img = Image.open(args.seg_im)
-	numpy = np.array(img)
-	
-	viewer = Viewer(images,numpy,directory)
+    import profile
+    profile.run('main()')

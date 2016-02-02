@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """ applies corrections generated from segcor.py.
-    View README.md for details"""
+    View README.md for details
 """
 
 import os, sys, argparse
