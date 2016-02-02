@@ -246,7 +246,7 @@ class Viewer(object):
                 if event.type == SDL_MOUSEBUTTONDOWN:
                     if event.button.button == SDL_BUTTON_LEFT:
                         ix, iy = self._view.image_coordinate(event.button.x, event.button.y)
-                        print "x: %i, y: %i, cid: %i"%(ix, iy, cid_from_RGB(self.numpy[iy,ix]))
+                        print "x: %i, y: %i"%(ix, iy)
 
 
         SDL_DestroyWindow(self.window)
