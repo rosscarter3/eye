@@ -400,5 +400,7 @@ def cid_from_RGB(RGB):
     return int(cid)
     
 if __name__ == "__main__":
-    import profile
-    profile.run('main()')
+    #import profile
+    #profile.run('main()')
+    
+    main()

@@ -24,3 +24,14 @@
 | 2                  | Select Cell 2          | Cell under mouse pointer                    |
 | m                  | Merge cells 1 and 2    | Changes colour of cell 2 to colour of cell 1|
 | b                  | Set cell to background | Change cell under mouse pointer to black    |
+
+# Prerequisites
+
+- Python 2.7
+- [Python SDL2 Library](http://pysdl2.readthedocs.org/en/latest/install.html)
+- Python Packages:
+	- argparse
+	- re
+	- numpy
+	- PIL
+	- ctypes
