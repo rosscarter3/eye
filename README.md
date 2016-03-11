@@ -1,14 +1,17 @@
-# Eye
+# README
+`./lib/segcor.py` generates the file `merges(time).txt` which can be applied to the uncorrected image with `apply_corrections.py` to generate a corrected segmented image.
 
-`/lib/eye.py` A simple command line image viewer, written in SDL.
+## SegCor
+Located at: `./lib/segcor.py`
 
-# SegCor
-`/lib/segcor.py` generates the file `merges(time).txt` which can be applied to the uncorrected image with `apply_corrections.py` to generate a corrected segmented image.
+Usage: `python segcor.py [segmented_image_for_correction] [base_image_for_comparison]`
 
-# Apply Corrections
-`/lib/apply_corrections.py`
+## Apply Corrections
+Located at: `./lib/apply_corrections.py` 
 
-# Commands
+Usage: `python apply_corrections.py [image_to_be_corrected] [corrections_file]`
+
+## Commands
 
 | Key                | Command                | Notes                                       |
 | ------------------ | ---------------------- | ------------------------------------------- |
