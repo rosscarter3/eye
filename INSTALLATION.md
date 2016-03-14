@@ -15,7 +15,11 @@
 ## Terminal commands
 Install python bpackages via shell (powershell/cmd on windows, type `sh` to begin shell session):
 
-`pip install [package]`
+```
+pip install pillow
+pip install numpy
+pip install pysdl2
+```
 
 Run segcor:
 
