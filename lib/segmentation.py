@@ -50,6 +50,23 @@ def test_id2colorful_array():
     assert np.array_equal(colorful_ar, expected_ar), (colorful_ar, expected_ar)
 
 
+def id2mask_array(id_array, identifier):
+    """Return mask array."""
+    base_array = np.zeros(id_array.shape, dtype=bool)
+    array_coords = np.where(id_array == identifier)
+    base_array[array_coords] = True
+    return base_array
+
+
+def test_id2mask_array():
+    id_ar = np.ones((2, 2), dtype=np.uint64)
+    id_ar[0, 0] = 0
+    expected_ar = np.ones((2, 2), dtype=bool)
+    expected_ar[0, 0] = False
+    mask_ar = id2mask_array(id_ar, 1)
+    assert np.array_equal(mask_ar, expected_ar), (mask_ar, expected_ar)
+
+
 class Segmentation(object):
     """A segmentation."""
 
@@ -62,7 +79,7 @@ class Segmentation(object):
         """Write false color image to disk."""
         im = PIL.Image.fromarray(self.colorful_ar)
         im.save(fpath)
-         
+
 
 if __name__ == "__main__":
     HERE = os.path.dirname(os.path.realpath(__file__))
