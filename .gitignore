@@ -1,5 +1,8 @@
 *.png
 *.txt
+*.swp
 src/eye
 src/see
 lib/testdata
+
+env/*
