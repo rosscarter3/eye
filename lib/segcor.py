@@ -45,21 +45,21 @@ class ImageContainer(list):
             self._current_id = len(self) - 1
 
     def load_images(self, seg_im, base_im):
-		"""Loads the segmented image and the base image"""
-		self.append(os.path.abspath(seg_im))
-		self.append(os.path.abspath(base_im))
+        """Loads the segmented image and the base image"""
+        self.append(os.path.abspath(seg_im))
+        self.append(os.path.abspath(base_im))
 
     def update_current(self, new_path):
-	"""Replace the current file path with a new one."""
-	self[self._current_id] = os.path.abspath(new_path)
+        """Replace the current file path with a new one."""
+        self[self._current_id] = os.path.abspath(new_path)
 
 class View(object):
     def __init__(self, wx, wy, imx, imy):
         self._zoom_level = 0
-	self.windowx = wx
-	self.windowy = wy
-	self.imy = imy
-	self.imx = imx
+        self.windowx = wx
+        self.windowy = wy
+        self.imy = imy
+        self.imx = imx
         self._sizes = [(wx, wy), (wx/2, wy/2), (wx/4, wy/4)]
         self._x = 0
         self._y = 0
@@ -125,7 +125,7 @@ class View(object):
         self._x += step
         zoom_width = self._sizes[self._zoom_level][0]
         #move_span = self.windowx - zoom_width
-	move_span = self.imx - zoom_width
+        move_span = self.imx - zoom_width
         if self._x > move_span:
             self._x = move_span
 
@@ -140,7 +140,7 @@ class View(object):
         self._y += step
         zoom_height = self._sizes[self._zoom_level][1]
         #move_span = self.windowy - zoom_height
-	move_span = self.imy - zoom_height
+        move_span = self.imy - zoom_height
         if self._y > move_span:
             self._y = move_span
 
@@ -160,11 +160,11 @@ class Viewer(object):
         self.zoom_rect = SDL_Rect(0, 0, self._view.windowx, self._view.windowy)
         self.update_image()
         self.numpy = numpy
-	self.directory = directory
-	self.fn = 'merges_{}.txt'.format( dt.datetime.now().strftime('%Y%m%d%H%M%S') )
-	image_name = os.path.basename(self._images[0])
-	self.im_name = '{}_corrected_{}.png'.format( image_name, dt.datetime.now().strftime('%Y%m%d%H%M%S') )
-	self.fp = os.path.join(self.directory,self.fn)
+        self.directory = directory
+        self.fn = 'merges_{}.txt'.format( dt.datetime.now().strftime('%Y%m%d%H%M%S') )
+        image_name = os.path.basename(self._images[0])
+        self.im_name = '{}_corrected_{}.png'.format( image_name, dt.datetime.now().strftime('%Y%m%d%H%M%S') )
+        self.fp = os.path.join(self.directory,self.fn)
         self.run()
 
     def update_zoom(self):
@@ -179,7 +179,7 @@ class Viewer(object):
         SDL_SetWindowTitle(self.window, b"Image Viewer: {}".format(os.path.basename(fpath)))
         texture = IMG_LoadTexture(self.renderer, fpath)
 
-	self.update_zoom()
+        self.update_zoom()
         SDL_RenderClear(self.renderer)
         SDL_RenderCopy(self.renderer, texture, self.zoom_rect, self.display_rect)
         SDL_RenderPresent(self.renderer)
@@ -225,98 +225,98 @@ class Viewer(object):
         self.update_image()
 
     def set_cell1(self):
-	""" sets cell under the cursor to cell1"""
-	x, y = ctypes.c_int(0), ctypes.c_int(0)
-	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+        """ sets cell under the cursor to cell1"""
+        x, y = ctypes.c_int(0), ctypes.c_int(0)
+        buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
 
-	ix, iy = self._view.image_coordinate(x.value, y.value)
+        ix, iy = self._view.image_coordinate(x.value, y.value)
 
-	self.cell1 = self.numpy[iy,ix]
-	self.c1id = cid_from_RGB(self.cell1)
-	print "cell1 cid: ", self.c1id
+        self.cell1 = self.numpy[iy,ix]
+        self.c1id = cid_from_RGB(self.cell1)
+        print "cell1 cid: ", self.c1id
 
     def set_cell2(self):
-	""" sets cell under the cursor to cell2"""
-	x, y = ctypes.c_int(0), ctypes.c_int(0)
-	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
-	ix, iy = self._view.image_coordinate(x.value, y.value)
+        """ sets cell under the cursor to cell2"""
+        x, y = ctypes.c_int(0), ctypes.c_int(0)
+        buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+        ix, iy = self._view.image_coordinate(x.value, y.value)
 
-	self.cell2 = self.numpy[iy,ix]
-	self.c2id = cid_from_RGB(self.cell2)
-	print "cell2 cid: ", self.c2id
+        self.cell2 = self.numpy[iy,ix]
+        self.c2id = cid_from_RGB(self.cell2)
+        print "cell2 cid: ", self.c2id
 
     def set_bcell(self):
-	""" sets cell under the cursor to bcell"""
-	x, y = ctypes.c_int(0), ctypes.c_int(0)
-	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
-	ix, iy = self._view.image_coordinate(x.value, y.value)
+        """ sets cell under the cursor to bcell"""
+        x, y = ctypes.c_int(0), ctypes.c_int(0)
+        buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+        ix, iy = self._view.image_coordinate(x.value, y.value)
 
-	self.bcell = self.numpy[iy,ix]
-	self.bcid =  cid_from_RGB(self.bcell)
+        self.bcell = self.numpy[iy,ix]
+        self.bcid =  cid_from_RGB(self.bcell)
 
 
     def mergecells(self,cell1id,cell2id):
-	""" sets cell selected by set_cell2 to colour of cell selected by set cell 1 """
-	print "Merging... "
+        """ sets cell selected by set_cell2 to colour of cell selected by set cell 1 """
+        print "Merging... "
 
-	outstring = "%s -> %s\n"%(np.array_str(cell2id), np.array_str(cell1id))
-	print outstring
-	with open(self.fp, "a") as op:
-	    op.write(outstring)
+        outstring = "%s -> %s\n"%(np.array_str(cell2id), np.array_str(cell1id))
+        print outstring
+        with open(self.fp, "a") as op:
+            op.write(outstring)
 
-	def get_mask(array, color_index):
-	    y, x, _ = self.numpy.shape
-	    mask = np.zeros((y, x), dtype=bool)
-	    mask[np.where(self.numpy[:,:,color_index] == cell2id[color_index])] = True
-	    return mask
+        def get_mask(array, color_index):
+            y, x, _ = self.numpy.shape
+            mask = np.zeros((y, x), dtype=bool)
+            mask[np.where(self.numpy[:,:,color_index] == cell2id[color_index])] = True
+            return mask
 
-	red_mask = get_mask(self.numpy, 0)
-	green_mask = get_mask(self.numpy, 1)
-	blue_mask = get_mask(self.numpy, 2)
+        red_mask = get_mask(self.numpy, 0)
+        green_mask = get_mask(self.numpy, 1)
+        blue_mask = get_mask(self.numpy, 2)
 
-	mask = np.logical_and(red_mask, green_mask)
-	mask = np.logical_and(mask, blue_mask)
+        mask = np.logical_and(red_mask, green_mask)
+        mask = np.logical_and(mask, blue_mask)
 
-	self.numpy[mask,] = cell1id
+        self.numpy[mask,] = cell1id
 
-	merge_path = os.path.join(self.directory, self.im_name)
+        merge_path = os.path.join(self.directory, self.im_name)
 
-	im = Image.fromarray(self.numpy)
-	im.save(merge_path)
+        im = Image.fromarray(self.numpy)
+        im.save(merge_path)
 
-	self._images.update_current(merge_path)
-	self.update_image()
+        self._images.update_current(merge_path)
+        self.update_image()
 
-	print "Done"
+        print "Done"
 
     def set_to_background(self,bcell):
-	""" sets cell selected by set_bcell to black """
-	print "cell: ", self.bcid, "set to [0  0  0]"
-	outstring = "%s -> [ 0, 0, 0]\n"%(np.array_str(self.bcell))
-	with open(self.fp, "a") as op:
-	    op.write(outstring)
+        """ sets cell selected by set_bcell to black """
+        print "cell: ", self.bcid, "set to [0  0  0]"
+        outstring = "%s -> [ 0, 0, 0]\n"%(np.array_str(self.bcell))
+        with open(self.fp, "a") as op:
+            op.write(outstring)
 
-	def get_mask(array, color_index):
-	    y, x, _ = self.numpy.shape
-	    mask = np.zeros((y, x), dtype=bool)
-	    mask[np.where(self.numpy[:,:,color_index] == bcell[color_index])] = True
-	    return mask
+        def get_mask(array, color_index):
+            y, x, _ = self.numpy.shape
+            mask = np.zeros((y, x), dtype=bool)
+            mask[np.where(self.numpy[:,:,color_index] == bcell[color_index])] = True
+            return mask
 
-	red_mask = get_mask(self.numpy, 0)
-	green_mask = get_mask(self.numpy, 1)
-	blue_mask = get_mask(self.numpy, 2)
+        red_mask = get_mask(self.numpy, 0)
+        green_mask = get_mask(self.numpy, 1)
+        blue_mask = get_mask(self.numpy, 2)
 
-	mask = np.logical_and(red_mask, green_mask)
-	mask = np.logical_and(mask, blue_mask)
+        mask = np.logical_and(red_mask, green_mask)
+        mask = np.logical_and(mask, blue_mask)
 
-	self.numpy[mask] = [0,0,0]
+        self.numpy[mask] = [0,0,0]
 
-	merge_path = os.path.join(self.directory, self.im_name)
-	im = Image.fromarray(self.numpy)
-	im.save(merge_path)
+        merge_path = os.path.join(self.directory, self.im_name)
+        im = Image.fromarray(self.numpy)
+        im.save(merge_path)
 
-	self._images.update_current(merge_path)
-	self.update_image()
+        self._images.update_current(merge_path)
+        self.update_image()
 
     def run(self):
         """Run the application."""
@@ -324,15 +324,15 @@ class Viewer(object):
         event = SDL_Event()
         while running:
 
-	    keystate = SDL_GetKeyboardState(None)
-	    if keystate[sdl2.SDL_SCANCODE_L]:
-		self.move_right()
-	    if keystate[sdl2.SDL_SCANCODE_H]:
-		self.move_left()
-	    if keystate[sdl2.SDL_SCANCODE_K]:
-		self.move_up()
-	    if keystate[sdl2.SDL_SCANCODE_J]:
-		self.move_down()
+            keystate = SDL_GetKeyboardState(None)
+            if keystate[sdl2.SDL_SCANCODE_L]:
+                self.move_right()
+            if keystate[sdl2.SDL_SCANCODE_H]:
+                self.move_left()
+            if keystate[sdl2.SDL_SCANCODE_K]:
+                self.move_up()
+            if keystate[sdl2.SDL_SCANCODE_J]:
+                self.move_down()
 
             while SDL_PollEvent(ctypes.byref(event)) != 0:
                 if event.type == SDL_QUIT:
@@ -348,23 +348,23 @@ class Viewer(object):
                     if event.key.keysym.sym == sdl2.SDLK_DOWN:
                         self.zoom_out()
 
-		    if event.key.keysym.sym == sdl2.SDLK_1:
+                    if event.key.keysym.sym == sdl2.SDLK_1:
                         self.set_cell1()
-		    if event.key.keysym.sym == sdl2.SDLK_2:
+                    if event.key.keysym.sym == sdl2.SDLK_2:
                         self.set_cell2()
 
-		    if event.key.keysym.sym == sdl2.SDLK_b:
+                    if event.key.keysym.sym == sdl2.SDLK_b:
                         self.set_bcell()
-			self.set_to_background(self.bcell)
+                        self.set_to_background(self.bcell)
 
                     if event.key.keysym.sym == sdl2.SDLK_m:
                         self.mergecells(self.cell1,self.cell2)
 
-		if event.type == SDL_MOUSEWHEEL:
-		    if event.wheel.y > 0:
-			self.zoom_in()
-		    if event.wheel.y < 0:
-			self.zoom_out()
+                if event.type == SDL_MOUSEWHEEL:
+                    if event.wheel.y > 0:
+                        self.zoom_in()
+                    if event.wheel.y < 0:
+                        self.zoom_out()
 
                 if event.type == SDL_MOUSEBUTTONDOWN:
                     if event.button.button == SDL_BUTTON_LEFT:
@@ -373,7 +373,7 @@ class Viewer(object):
 
 
         SDL_DestroyWindow(self.window)
-	sdl2.ext.quit()
+        sdl2.ext.quit()
         return 0
 
 def main():
