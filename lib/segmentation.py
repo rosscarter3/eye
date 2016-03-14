@@ -80,9 +80,18 @@ class Segmentation(object):
         im = PIL.Image.fromarray(self.colorful_ar)
         im.save(fpath)
 
+    def convert_to_background(self, identifier):
+        """Convert a region to background."""
+        mask = id2mask_array(self.id_ar, identifier)
+        self.rgb_ar[mask] = (0, 0, 0)
+        self.id_ar[mask] = 0
+        self.colorful_ar[mask] = (0, 0, 0)
+
 
 if __name__ == "__main__":
     HERE = os.path.dirname(os.path.realpath(__file__))
     fpath = os.path.join(HERE, "..", "example_data", "00000.png")
     segmentation = Segmentation(fpath)
+    identifier = segmentation.id_ar[0, 0]
+    segmentation.convert_to_background(identifier)
     segmentation.write_colorful_image("tmp.png")
