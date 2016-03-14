@@ -1,6 +1,7 @@
 *.png
 *.txt
 *.swp
+*.pyc
 src/eye
 src/see
 lib/testdata
