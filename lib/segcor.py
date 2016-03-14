@@ -15,7 +15,7 @@ from sdl2 import *
 from sdl2.sdlimage import IMG_LoadTexture
 import sdl2.ext
 
-import datetime as dt 
+import datetime as dt
 
 def sorted_nicely(l):
     convert = lambda text: int(text) if text.isdigit() else text
@@ -48,7 +48,7 @@ class ImageContainer(list):
 		"""Loads the segmented image and the base image"""
 		self.append(os.path.abspath(seg_im))
 		self.append(os.path.abspath(base_im))
-    
+
     def update_current(self, new_path):
 	"""Replace the current file path with a new one."""
 	self[self._current_id] = os.path.abspath(new_path)
@@ -166,7 +166,7 @@ class Viewer(object):
 	self.im_name = '{}_corrected_{}.png'.format( image_name, dt.datetime.now().strftime('%Y%m%d%H%M%S') )
 	self.fp = os.path.join(self.directory,self.fn)
         self.run()
-	
+
     def update_zoom(self):
         """Update the zoom box."""
         x, y, (w, h) = self._view.current()
@@ -174,11 +174,11 @@ class Viewer(object):
 
     def update_image(self):
         """Display the next image and update the window title."""
-        
+
         fpath = self._images.current()
         SDL_SetWindowTitle(self.window, b"Image Viewer: {}".format(os.path.basename(fpath)))
         texture = IMG_LoadTexture(self.renderer, fpath)
-	
+
 	self.update_zoom()
         SDL_RenderClear(self.renderer)
         SDL_RenderCopy(self.renderer, texture, self.zoom_rect, self.display_rect)
@@ -228,9 +228,9 @@ class Viewer(object):
 	""" sets cell under the cursor to cell1"""
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
-	
+
 	ix, iy = self._view.image_coordinate(x.value, y.value)
-	
+
 	self.cell1 = self.numpy[iy,ix]
 	self.c1id = cid_from_RGB(self.cell1)
 	print "cell1 cid: ", self.c1id
@@ -240,7 +240,7 @@ class Viewer(object):
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
 	ix, iy = self._view.image_coordinate(x.value, y.value)
-	
+
 	self.cell2 = self.numpy[iy,ix]
 	self.c2id = cid_from_RGB(self.cell2)
 	print "cell2 cid: ", self.c2id
@@ -250,20 +250,20 @@ class Viewer(object):
 	x, y = ctypes.c_int(0), ctypes.c_int(0)
 	buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
 	ix, iy = self._view.image_coordinate(x.value, y.value)
-	
+
 	self.bcell = self.numpy[iy,ix]
 	self.bcid =  cid_from_RGB(self.bcell)
-	
+
 
     def mergecells(self,cell1id,cell2id):
 	""" sets cell selected by set_cell2 to colour of cell selected by set cell 1 """
 	print "Merging... "
-	
+
 	outstring = "%s -> %s\n"%(np.array_str(cell2id), np.array_str(cell1id))
 	print outstring
 	with open(self.fp, "a") as op:
 	    op.write(outstring)
-	
+
 	def get_mask(array, color_index):
 	    y, x, _ = self.numpy.shape
 	    mask = np.zeros((y, x), dtype=bool)
@@ -278,15 +278,15 @@ class Viewer(object):
 	mask = np.logical_and(mask, blue_mask)
 
 	self.numpy[mask,] = cell1id
-	
+
 	merge_path = os.path.join(self.directory, self.im_name)
-	
+
 	im = Image.fromarray(self.numpy)
 	im.save(merge_path)
-	
+
 	self._images.update_current(merge_path)
 	self.update_image()
-	    
+
 	print "Done"
 
     def set_to_background(self,bcell):
@@ -295,7 +295,7 @@ class Viewer(object):
 	outstring = "%s -> [ 0, 0, 0]\n"%(np.array_str(self.bcell))
 	with open(self.fp, "a") as op:
 	    op.write(outstring)
-	
+
 	def get_mask(array, color_index):
 	    y, x, _ = self.numpy.shape
 	    mask = np.zeros((y, x), dtype=bool)
@@ -310,11 +310,11 @@ class Viewer(object):
 	mask = np.logical_and(mask, blue_mask)
 
 	self.numpy[mask] = [0,0,0]
-	    
+
 	merge_path = os.path.join(self.directory, self.im_name)
 	im = Image.fromarray(self.numpy)
 	im.save(merge_path)
-	
+
 	self._images.update_current(merge_path)
 	self.update_image()
 
@@ -323,7 +323,7 @@ class Viewer(object):
         running = True
         event = SDL_Event()
         while running:
-	    
+
 	    keystate = SDL_GetKeyboardState(None)
 	    if keystate[sdl2.SDL_SCANCODE_L]:
 		self.move_right()
@@ -333,7 +333,7 @@ class Viewer(object):
 		self.move_up()
 	    if keystate[sdl2.SDL_SCANCODE_J]:
 		self.move_down()
-	    
+
             while SDL_PollEvent(ctypes.byref(event)) != 0:
                 if event.type == SDL_QUIT:
                     running = False
@@ -359,7 +359,7 @@ class Viewer(object):
 
                     if event.key.keysym.sym == sdl2.SDLK_m:
                         self.mergecells(self.cell1,self.cell2)
-		
+
 		if event.type == SDL_MOUSEWHEEL:
 		    if event.wheel.y > 0:
 			self.zoom_in()
@@ -375,7 +375,7 @@ class Viewer(object):
         SDL_DestroyWindow(self.window)
 	sdl2.ext.quit()
         return 0
-	
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("seg_im", help="Segmented Image")
@@ -385,22 +385,22 @@ def main():
 
     images = ImageContainer()
     images.load_images(args.seg_im, args.base_im)
-	
+
     directory = os.path.commonprefix([args.seg_im, args.base_im])
-	
+
     img = Image.open(args.seg_im)
     numpy = np.array(img)
-	
+
     viewer = Viewer(images,numpy,directory)
     return 0
 
 def cid_from_RGB(RGB):
     """ Generates unique ID from RGB values """
-    cid = RGB[2] + 256 * RGB[1] + 256 * 256 * RGB[0] 
+    cid = RGB[2] + 256 * RGB[1] + 256 * 256 * RGB[0]
     return int(cid)
-    
+
 if __name__ == "__main__":
     #import profile
     #profile.run('main()')
-    
+
     main()
