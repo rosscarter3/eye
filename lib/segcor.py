@@ -162,7 +162,6 @@ class Viewer(object):
         self.zoom_rect = SDL_Rect(0, 0, self._view.windowx, self._view.windowy)
         self.update_image()
         self.segmentation = segmentation
-#       self.numpy = numpy
         self.directory = directory
         self.fn = 'merges_{}.txt'.format( dt.datetime.now().strftime('%Y%m%d%H%M%S') )
         image_name = os.path.basename(self._images[0])
@@ -234,9 +233,6 @@ class Viewer(object):
 
         ix, iy = self._view.image_coordinate(x.value, y.value)
 
-#       self.cell1 = self.numpy[iy,ix]
-#       self.c1id = cid_from_RGB(self.cell1)
-
         self.c1id = self.segmentation.identifier(iy, ix)
         print "cell1 cid: ", self.c1id
 
@@ -246,9 +242,6 @@ class Viewer(object):
         buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
         ix, iy = self._view.image_coordinate(x.value, y.value)
 
-#       self.cell2 = self.numpy[iy,ix]
-#       self.c2id = cid_from_RGB(self.cell2)
-
         self.c2id = self.segmentation.identifier(iy, ix)
         print "cell2 cid: ", self.c2id
 
@@ -257,9 +250,6 @@ class Viewer(object):
         x, y = ctypes.c_int(0), ctypes.c_int(0)
         buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
         ix, iy = self._view.image_coordinate(x.value, y.value)
-
-#       self.bcell = self.numpy[iy,ix]
-#       self.bcid =  cid_from_RGB(self.bcell)
 
         self.bcid = self.segmentation.identifier(iy, ix)
 
@@ -273,28 +263,9 @@ class Viewer(object):
         with open(self.fp, "a") as op:
             op.write(outstring)
 
-#       def get_mask(array, color_index):
-#           y, x, _ = self.numpy.shape
-#           mask = np.zeros((y, x), dtype=bool)
-#           mask[np.where(self.numpy[:,:,color_index] == cell2id[color_index])] = True
-#           return mask
-
-#       red_mask = get_mask(self.numpy, 0)
-#       green_mask = get_mask(self.numpy, 1)
-#       blue_mask = get_mask(self.numpy, 2)
-
-#       mask = np.logical_and(red_mask, green_mask)
-#       mask = np.logical_and(mask, blue_mask)
-
-#       self.numpy[mask,] = cell1id
-
         merge_path = os.path.join(self.directory, self.im_name)
         self.segmentation.merge(cell1id, cell2id)
         self.segmentation.write_colorful_image(merge_path)
-
-
-#       im = Image.fromarray(self.numpy)
-#       im.save(merge_path)
 
         self._images.update_current(merge_path)
         self.update_image()
@@ -308,27 +279,9 @@ class Viewer(object):
         with open(self.fp, "a") as op:
             op.write(outstring)
 
-#       def get_mask(array, color_index):
-#           y, x, _ = self.numpy.shape
-#           mask = np.zeros((y, x), dtype=bool)
-#           mask[np.where(self.numpy[:,:,color_index] == bcell[color_index])] = True
-#           return mask
-
-#       red_mask = get_mask(self.numpy, 0)
-#       green_mask = get_mask(self.numpy, 1)
-#       blue_mask = get_mask(self.numpy, 2)
-
-#       mask = np.logical_and(red_mask, green_mask)
-#       mask = np.logical_and(mask, blue_mask)
-
-#       self.numpy[mask] = [0,0,0]
-
         merge_path = os.path.join(self.directory, self.im_name)
         self.segmentation.convert_to_background(bcid)
         self.segmentation.write_colorful_image(merge_path)
-
-#       im = Image.fromarray(self.numpy)
-#       im.save(merge_path)
 
         self._images.update_current(merge_path)
         self.update_image()
@@ -387,7 +340,6 @@ class Viewer(object):
                         cellid = self.segmentation.identifier(iy, ix)
                         print "x: %i, y: %i, cid: %i"%(ix, iy, cellid)
 
-
         SDL_DestroyWindow(self.window)
         sdl2.ext.quit()
         return 0
@@ -408,10 +360,6 @@ def main():
 
     images = ImageContainer()
     images.load_images(colorful_fn, args.base_im)
-
-
-#   img = Image.open(args.seg_im)
-#   numpy = np.array(img)
 
     viewer = Viewer(images, segmentation, directory)
     return 0
