@@ -70,8 +70,8 @@ def test_id2mask_array():
 class Segmentation(object):
     """A segmentation."""
 
-    def __init__(self, fpath):
-        self.rgb_ar = np.array(PIL.Image.open(fpath))
+    def __init__(self, rgb_ar):
+        self.rgb_ar = rgb_ar
         self.id_ar = rgb2id_array(self.rgb_ar)
         self.colorful_ar = id2colorful_array(self.id_ar)
 
@@ -103,11 +103,69 @@ class Segmentation(object):
         self.colorful_ar[mask2] = colorful_val
         self.id_ar[mask2] = id1
 
+    def identifier(self, row, col):
+        """Return the identifier at position row, col."""
+        return self.id_ar[row, col]
+
+    def pretty_color(self, row, col):
+        """Return the false color RGB value at position row, col."""
+        return self.colorful_ar[row, col]
+
+
+def test_background():
+    def make_rgb(row):
+        plane = np.array([row, row], dtype=np.uint8)
+        return np.dstack([plane, plane, plane])
+    rgb_ar = make_rgb([1, 2, 3])
+    seg = Segmentation(rgb_ar)
+    id0 = seg.identifier(0, 0)
+    id1 = seg.identifier(0, 1)
+    id2 = seg.identifier(0, 2)
+    seg.convert_to_background(id1)
+    assert np.array_equal(seg.rgb_ar, make_rgb([1, 0, 3]))
+    expected_id = np.array([[id0, 0, id2],
+                            [id0, 0, id2]],
+                           dtype=np.uint64)
+    assert np.array_equal(seg.id_ar, expected_id)
+
+    color0 = seg.pretty_color(0, 0)
+    color2 = seg.pretty_color(0, 2)
+    expected_colorful = np.ones(rgb_ar.shape, dtype=np.uint8)
+    expected_colorful[0:2, 0] = color0
+    expected_colorful[0:2, 1] = (0, 0, 0)
+    expected_colorful[0:2, 2] = color2
+    assert np.array_equal(seg.colorful_ar, expected_colorful)
+
+
+def test_merge():
+    def make_rgb(row):
+        plane = np.array([row, row], dtype=np.uint8)
+        return np.dstack([plane, plane, plane])
+    rgb_ar = make_rgb([1, 2, 3])
+    seg = Segmentation(rgb_ar)
+    id0 = seg.identifier(0, 0)
+    id1 = seg.identifier(0, 1)
+    id2 = seg.identifier(0, 2)
+    seg.merge(id1, id2)
+    assert np.array_equal(seg.rgb_ar, make_rgb([1, 2, 2]))
+    assert np.array_equal(seg.id_ar,
+                          np.array([[id0, id1, id1],
+                                    [id0, id1, id1]],
+                                   dtype=np.uint64))
+
+    color1 = seg.pretty_color(0, 0)
+    color2 = seg.pretty_color(0, 1)
+    expected_colorful = np.ones(rgb_ar.shape, dtype=np.uint8)
+    expected_colorful[0:2, 0] = color1
+    expected_colorful[0:2, 1:3] = color2
+    assert np.array_equal(seg.colorful_ar, expected_colorful)
 
 if __name__ == "__main__":
     HERE = os.path.dirname(os.path.realpath(__file__))
     fpath = os.path.join(HERE, "..", "example_data", "00000.png")
-    segmentation = Segmentation(fpath)
+    rgb_ar = np.array(PIL.Image.open(fpath))
+
+    segmentation = Segmentation(rgb_ar)
     segmentation.write_colorful_image("org.png")
     identifier = segmentation.id_ar[0, 0]
     second_id = segmentation.id_ar[-1, -1]
