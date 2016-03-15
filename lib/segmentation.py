@@ -87,11 +87,31 @@ class Segmentation(object):
         self.id_ar[mask] = 0
         self.colorful_ar[mask] = (0, 0, 0)
 
+    def merge(self, id1, id2):
+        """Merge two regions.
+
+        Converts id2 values to id1 values.
+        """
+        mask1 = id2mask_array(self.id_ar, id1)
+        mask2 = id2mask_array(self.id_ar, id2)
+
+        # Get the rgb values.
+        rgb_val = self.rgb_ar[mask1][0]
+        colorful_val = self.colorful_ar[mask1][0]
+
+        self.rgb_ar[mask2] = rgb_val
+        self.colorful_ar[mask2] = colorful_val
+        self.id_ar[mask2] = id1
+
 
 if __name__ == "__main__":
     HERE = os.path.dirname(os.path.realpath(__file__))
     fpath = os.path.join(HERE, "..", "example_data", "00000.png")
     segmentation = Segmentation(fpath)
+    segmentation.write_colorful_image("org.png")
     identifier = segmentation.id_ar[0, 0]
+    second_id = segmentation.id_ar[-1, -1]
+    segmentation.merge(identifier, second_id)
+    segmentation.write_colorful_image("merge.png")
     segmentation.convert_to_background(identifier)
-    segmentation.write_colorful_image("tmp.png")
+    segmentation.write_colorful_image("background.png")
