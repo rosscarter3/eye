@@ -80,6 +80,14 @@ class Segmentation(object):
         im = PIL.Image.fromarray(self.colorful_ar)
         im.save(fpath)
 
+    def write_rgb_image(self, fpath):
+        """Write RGB image to disk.
+
+        Where the RGB values act as identifiers originally taken from the initialisation image.
+        """
+        im = PIL.Image.fromarray(self.rgb_ar)
+        im.save(fpath)
+
     def convert_to_background(self, identifier):
         """Convert a region to background."""
         mask = id2mask_array(self.id_ar, identifier)
@@ -173,3 +181,4 @@ if __name__ == "__main__":
     segmentation.write_colorful_image("merge.png")
     segmentation.convert_to_background(identifier)
     segmentation.write_colorful_image("background.png")
+    segmentation.write_rgb_image("rgb.png")
