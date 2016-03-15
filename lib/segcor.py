@@ -8,7 +8,6 @@ import re
 
 import numpy as np
 from PIL import Image
-import sys
 
 import ctypes
 from sdl2 import *
@@ -19,10 +18,11 @@ import datetime as dt
 
 from segmentation import Segmentation
 
+
 def sorted_nicely(l):
     convert = lambda text: int(text) if text.isdigit() else text
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
-    return sorted(l, key = alphanum_key)
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(l, key=alphanum_key)
 
 
 class ImageContainer(list):
@@ -54,6 +54,7 @@ class ImageContainer(list):
     def update_current(self, new_path):
         """Replace the current file path with a new one."""
         self[self._current_id] = os.path.abspath(new_path)
+
 
 class View(object):
     def __init__(self, wx, wy, imx, imy):
@@ -126,7 +127,6 @@ class View(object):
         """Shift view some steps to the right."""
         self._x += step
         zoom_width = self._sizes[self._zoom_level][0]
-        #move_span = self.windowx - zoom_width
         move_span = self.imx - zoom_width
         if self._x > move_span:
             self._x = move_span
@@ -141,32 +141,39 @@ class View(object):
         """Shift view some steps down."""
         self._y += step
         zoom_height = self._sizes[self._zoom_level][1]
-        #move_span = self.windowy - zoom_height
         move_span = self.imy - zoom_height
         if self._y > move_span:
             self._y = move_span
+
 
 class Viewer(object):
     """Basic viewer."""
 
     def __init__(self, images, segmentation, directory):
+        def now_str():
+            return dt.datetime.now().strftime('%Y%m%d%H%M%S')
         self._images = images
-        self._view = View(1536,1024,segmentation.id_ar.shape[1],segmentation.id_ar.shape[0])
+        self._view = View(1536, 1024, segmentation.id_ar.shape[1],
+                          segmentation.id_ar.shape[0])
         SDL_Init(SDL_INIT_VIDEO)
         self.window = SDL_CreateWindow(b"Image Viewer",
-                              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              self._view.windowx, self._view.windowy, SDL_WINDOW_SHOWN)
+                                       SDL_WINDOWPOS_CENTERED,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       self._view.windowx,
+                                       self._view.windowy,
+                                       SDL_WINDOW_SHOWN)
 
         self.renderer = SDL_CreateRenderer(self.window, -1, 0)
-        self.display_rect = SDL_Rect(0, 0, self._view.windowx, self._view.windowy)
+        self.display_rect = SDL_Rect(0, 0, self._view.windowx,
+                                     self._view.windowy)
         self.zoom_rect = SDL_Rect(0, 0, self._view.windowx, self._view.windowy)
         self.update_image()
         self.segmentation = segmentation
         self.directory = directory
-        self.fn = 'merges_{}.txt'.format( dt.datetime.now().strftime('%Y%m%d%H%M%S') )
+        self.fn = 'merges_{}.txt'.format(now_str())
         image_name = os.path.basename(self._images[0])
-        self.im_name = '{}_corrected_{}.png'.format( image_name, dt.datetime.now().strftime('%Y%m%d%H%M%S') )
-        self.fp = os.path.join(self.directory,self.fn)
+        self.im_name = '{}_corrected_{}.png'.format(image_name, now_str())
+        self.fp = os.path.join(self.directory, self.fn)
         self.run()
 
     def update_zoom(self):
@@ -178,12 +185,14 @@ class Viewer(object):
         """Display the next image and update the window title."""
 
         fpath = self._images.current()
-        SDL_SetWindowTitle(self.window, b"Image Viewer: {}".format(os.path.basename(fpath)))
+        SDL_SetWindowTitle(self.window,
+                           b"Image Viewer: {}".format(os.path.basename(fpath)))
         texture = IMG_LoadTexture(self.renderer, fpath)
 
         self.update_zoom()
         SDL_RenderClear(self.renderer)
-        SDL_RenderCopy(self.renderer, texture, self.zoom_rect, self.display_rect)
+        SDL_RenderCopy(self.renderer, texture,
+                       self.zoom_rect, self.display_rect)
         SDL_RenderPresent(self.renderer)
 
     def next(self):
@@ -229,7 +238,7 @@ class Viewer(object):
     def set_cell1(self):
         """ sets cell under the cursor to cell1"""
         x, y = ctypes.c_int(0), ctypes.c_int(0)
-        buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+        sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
 
         ix, iy = self._view.image_coordinate(x.value, y.value)
 
@@ -239,7 +248,7 @@ class Viewer(object):
     def set_cell2(self):
         """ sets cell under the cursor to cell2"""
         x, y = ctypes.c_int(0), ctypes.c_int(0)
-        buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+        sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
         ix, iy = self._view.image_coordinate(x.value, y.value)
 
         self.c2id = self.segmentation.identifier(iy, ix)
@@ -248,17 +257,21 @@ class Viewer(object):
     def set_bcell(self):
         """ sets cell under the cursor to bcell"""
         x, y = ctypes.c_int(0), ctypes.c_int(0)
-        buttonstate = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+        sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
         ix, iy = self._view.image_coordinate(x.value, y.value)
 
         self.bcid = self.segmentation.identifier(iy, ix)
 
+    def mergecells(self, cell1id, cell2id):
+        """Merge two cells.
 
-    def mergecells(self,cell1id,cell2id):
-        """ sets cell selected by set_cell2 to colour of cell selected by set cell 1 """
+        sets cell selected by set_cell2 to colour of cell selected
+        by set cell 1
+        """
         print "Merging... "
 
-        outstring = "%s -> %s\n"%(np.array_str(cell2id), np.array_str(cell1id))
+        outstring = "%s -> %s\n" % (np.array_str(cell2id),
+                                    np.array_str(cell1id))
         print outstring
         with open(self.fp, "a") as op:
             op.write(outstring)
@@ -275,7 +288,7 @@ class Viewer(object):
     def set_to_background(self, bcid):
         """ sets cell selected by set_bcell to black """
         print "cell: ", bcid, "set to [0  0  0]"
-        outstring = "%s -> [ 0, 0, 0]\n"%(np.array_str(bcid))
+        outstring = "%s -> [ 0, 0, 0]\n" % (np.array_str(bcid))
         with open(self.fp, "a") as op:
             op.write(outstring)
 
@@ -326,7 +339,7 @@ class Viewer(object):
                         self.set_to_background(self.bcid)
 
                     if event.key.keysym.sym == sdl2.SDLK_m:
-                        self.mergecells(self.c1id ,self.c2id)
+                        self.mergecells(self.c1id, self.c2id)
 
                 if event.type == SDL_MOUSEWHEEL:
                     if event.wheel.y > 0:
@@ -336,13 +349,15 @@ class Viewer(object):
 
                 if event.type == SDL_MOUSEBUTTONDOWN:
                     if event.button.button == SDL_BUTTON_LEFT:
-                        ix, iy = self._view.image_coordinate(event.button.x, event.button.y)
+                        ix, iy = self._view.image_coordinate(event.button.x,
+                                                             event.button.y)
                         cellid = self.segmentation.identifier(iy, ix)
-                        print "x: %i, y: %i, cid: %i"%(ix, iy, cellid)
+                        print "x: %i, y: %i, cid: %i" % (ix, iy, cellid)
 
         SDL_DestroyWindow(self.window)
         sdl2.ext.quit()
         return 0
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -361,8 +376,9 @@ def main():
     images = ImageContainer()
     images.load_images(colorful_fn, args.base_im)
 
-    viewer = Viewer(images, segmentation, directory)
+    Viewer(images, segmentation, directory)
     return 0
+
 
 def cid_from_RGB(RGB):
     """ Generates unique ID from RGB values """
