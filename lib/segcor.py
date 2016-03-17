@@ -339,8 +339,8 @@ class Viewer(object):
                         self.set_bcell()
                         self.set_to_background(self.bcid)
 
-                    if event.key.keysym.sym == sdl2.SDLK_m:
-                        self.mergecells(self.c1id, self.c2id)
+                    #if event.key.keysym.sym == sdl2.SDLK_m:
+                        #self.mergecells(self.c1id, self.c2id)
 
                 if event.type == SDL_MOUSEWHEEL:
                     if event.wheel.y > 0:

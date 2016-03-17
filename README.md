@@ -24,6 +24,5 @@ Usage: `python apply_corrections.py [image_to_be_corrected] [corrections_file]`
 | k                  | Move Down              |                                             |
 | l                  | Move Right             |                                             |
 | 1                  | Select Cell 1          | Cell under mouse pointer                    |
-| 2                  | Select Cell 2          | Cell under mouse pointer                    |
-| m                  | Merge cells 1 and 2    | Changes colour of cell 2 to colour of cell 1|
+| 2                  | Select Cell 2 and merge| Cell under mouse pointer                    |
 | b                  | Set cell to background | Change cell under mouse pointer to black    |
