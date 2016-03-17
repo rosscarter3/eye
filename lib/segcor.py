@@ -333,7 +333,8 @@ class Viewer(object):
                         self.set_cell1()
                     if event.key.keysym.sym == sdl2.SDLK_2:
                         self.set_cell2()
-
+                        self.mergecells(self.c1id, self.c2id)
+                        
                     if event.key.keysym.sym == sdl2.SDLK_b:
                         self.set_bcell()
                         self.set_to_background(self.bcid)
