@@ -10,10 +10,11 @@
 - download/install Python packages:
 	- pillow
 	- etc
+- clone secor.py from git
 - add segcor.py to `PATH`?
 
 ## Terminal commands
-Install python bpackages via shell (powershell/cmd on windows, type `sh` to begin shell session):
+Install python packages via shell (powershell/cmd on windows, type `sh` to begin shell session):
 
 ```
 pip install pillow
