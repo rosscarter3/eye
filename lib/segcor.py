@@ -153,6 +153,7 @@ class Viewer(object):
         def now_str():
             return dt.datetime.now().strftime('%Y%m%d%H%M%S')
         self._images = images
+        self.origin_path = images[0]
         self._view = View(1536, 1024, segmentation.id_ar.shape[1],
                           segmentation.id_ar.shape[0])
         SDL_Init(SDL_INIT_VIDEO)
@@ -172,6 +173,7 @@ class Viewer(object):
         self.directory = directory
         self.fn = 'merges_{}.txt'.format(now_str())
         image_name = os.path.basename(self._images[0])
+        self.outpath = self.origin_path + 'RGB_corrected_{}.png'.format(now_str())
         self.im_name = '{}_corrected_{}.png'.format(image_name, now_str())
         self.fp = os.path.join(self.directory, self.fn)
         self.run()
@@ -301,9 +303,8 @@ class Viewer(object):
 
     def save(self):
         """ saves the colourful image as the rgb version """
-        print 'Saving...'
-        im_path = os.path.join(self.directory,self.im_name)
-        self.segmentation.write_rgb_image(im_path)
+        print 'Saved'
+        self.segmentation.write_rgb_image(self.outpath)
 
     def run(self):
         """Run the application."""

@@ -26,3 +26,4 @@ Usage: `python apply_corrections.py [image_to_be_corrected] [corrections_file]`
 | 1                  | Select Cell 1          | Cell under mouse pointer                    |
 | 2                  | Select Cell 2 and merge| Cell under mouse pointer                    |
 | b                  | Set cell to background | Change cell under mouse pointer to black    |
+| s                  | Save an RGB image      | RGB values denotes cell ID                  |
