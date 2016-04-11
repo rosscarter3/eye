@@ -299,6 +299,12 @@ class Viewer(object):
         self._images.update_current(merge_path)
         self.update_image()
 
+    def save(self):
+        """ saves the colourful image as the rgb version """
+        print 'Saving...'
+        im_path = os.path.join(self.directory,self.im_name)
+        self.segmentation.write_rgb_image(im_path)
+
     def run(self):
         """Run the application."""
         running = True
@@ -338,6 +344,9 @@ class Viewer(object):
                     if event.key.keysym.sym == sdl2.SDLK_b:
                         self.set_bcell()
                         self.set_to_background(self.bcid)
+                        
+                    if event.key.keysym.sym == sdl2.SDLK_s:
+                        self.save()
 
                     #if event.key.keysym.sym == sdl2.SDLK_m:
                         #self.mergecells(self.c1id, self.c2id)
@@ -380,11 +389,6 @@ def main():
     Viewer(images, segmentation, directory)
     return 0
 
-
-def cid_from_RGB(RGB):
-    """ Generates unique ID from RGB values """
-    cid = RGB[2] + 256 * RGB[1] + 256 * 256 * RGB[0]
-    return int(cid)
 
 if __name__ == "__main__":
     #import profile
