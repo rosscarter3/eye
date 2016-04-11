@@ -2,6 +2,7 @@
 *.txt
 *.swp
 *.pyc
+*.db
 src/eye
 src/see
 lib/testdata
