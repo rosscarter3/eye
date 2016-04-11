@@ -10,7 +10,7 @@
 - download/install Python packages:
 	- pillow
 	- etc
-- clone secor.py from git
+- clone segcor.py from git
 - add segcor.py to `PATH`?
 
 ## Terminal commands
