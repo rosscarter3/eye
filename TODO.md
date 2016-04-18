@@ -4,6 +4,9 @@
 - Speed Increases
 - Screen sizes
 
+- segcor2!
+
+
 ## DONE
 - ~~**DONE** default image magnification etc. with SDL~~
 - ~~**DONE** More pleasing colour scheme~~ 

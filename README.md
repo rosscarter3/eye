@@ -4,14 +4,9 @@
 ## SegCor
 Located at: `./lib/segcor.py`
 
-Usage: `python segcor.py [segmented_image_for_correction] [base_image_for_comparison]`
+Usage: `segcor.py [segmented_image_for_correction] [base_image_for_comparison]`
 
-## Apply Corrections
-Located at: `./lib/apply_corrections.py` 
-
-Usage: `python apply_corrections.py [image_to_be_corrected] [corrections_file]`
-
-## Commands
+#### Commands
 
 | Key                | Command                | Notes                                       |
 | ------------------ | ---------------------- | ------------------------------------------- |
@@ -27,3 +22,20 @@ Usage: `python apply_corrections.py [image_to_be_corrected] [corrections_file]`
 | 2                  | Select Cell 2 and merge| Cell under mouse pointer                    |
 | b                  | Set cell to background | Change cell under mouse pointer to black    |
 | s                  | Save an RGB image      | RGB values denotes cell ID                  |
+
+## SegCor2
+Located at: `./lib/segcor2.py`
+
+Usage: `segcor2.py [segmented_image_for_correction] [base_image_for_comparison]`
+
+#### Commands
+| Key                | Command                | Notes                                       |
+| ------------------ | ---------------------- | ------------------------------------------- |
+| y                  | Accept suggested merge |                                             |
+| n                  | Reject suggested merge |                                             |
+
+## Apply Corrections
+Located at: `./lib/apply_corrections.py` 
+
+Usage: `python apply_corrections.py [image_to_be_corrected] [corrections_file]`
+
