@@ -380,7 +380,9 @@ def main():
     directory = os.path.commonprefix([args.seg_im, args.base_im])
 
     rgb_im = Image.open(args.seg_im)
-    segmentation = Segmentation(np.array(rgb_im))
+    intensity_im = Image.open(args.base_im)
+    
+    segmentation = Segmentation(np.array(rgb_im),np.array(intensity_im))
     colorful_fn = os.path.join(directory, 'colorful.png')
     segmentation.write_colorful_image(colorful_fn)
 

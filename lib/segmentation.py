@@ -66,14 +66,47 @@ def test_id2mask_array():
     mask_ar = id2mask_array(id_ar, 1)
     assert np.array_equal(mask_ar, expected_ar), (mask_ar, expected_ar)
 
+def structure_element(i, j, element_order):
+    """ returns a structuring element of size 'element_order' """
+    if element_order == 1:
+        """
+        [0,1,0]
+        [1,1,1]
+        [0,1,0]
+        """
+        i+= 1
+        j+= 1
+
+        return [         (i  , j+1),
+                (i-1, j  ),(i  , j  ),(i+1, j  ),
+                         (i  , j-1)]
+
+    if element_order == 2:
+        """
+        [0,0,1,0,0]
+        [0,1,1,1,0]
+        [1,1,1,1,1]
+        [0,1,1,1,0]
+        [0,0,1,0,0]
+        """
+        i+= 2
+        j+= 2
+
+        return [                   (i   , j+2),
+                          (i-1, j+1),(i  , j+1),(i+1, j+1),
+                (i-2, j  ),(i-1, j  ),(i  , j  ),(i+1, j  ),(i+2, j   ),
+                          (i-1, j-1),(i  , j-1),(i+1, j-1),
+                                   (i  , j-2)]
+
 
 class Segmentation(object):
     """A segmentation."""
 
-    def __init__(self, rgb_ar):
+    def __init__(self, rgb_ar, intensity_ar=0):
         self.rgb_ar = rgb_ar
         self.id_ar = rgb2id_array(self.rgb_ar)
         self.colorful_ar = id2colorful_array(self.id_ar)
+        self.intensity_ar = intensity_ar
 
     def write_colorful_image(self, fpath):
         """Write false color image to disk."""
@@ -118,7 +151,53 @@ class Segmentation(object):
     def pretty_color(self, row, col):
         """Return the false color RGB value at position row, col."""
         return self.colorful_ar[row, col]
-
+    
+    def eval_segmentation(self):
+        """evaluate the quality of the segmentation and return a list of boundaries to inspect"""
+        import matplotlib.pyplot as plt
+        
+        print 'evaluating'
+        
+        cid_array = self.id_ar
+        base_array = self.intensity_ar
+        
+        eval_array = np.zeros(cid_array.shape)
+        perimeter_array = np.zeros(cid_array.shape, dtype='uint8')
+        x_y_array = np.zeros(cid_array.shape)
+        
+        neighbour_cells_dict = dict()
+        
+        ele_ord = 1
+        
+        for i in range(cid_array.shape[0]-ele_ord*2):
+            for j in range(cid_array.shape[1]-ele_ord*2):
+                for x, y in structure_element(i, j, ele_ord):
+                    if cid_array[i+ele_ord, j+ele_ord] != cid_array[x, y]:
+                        eval_array[i+ele_ord, j+ele_ord] += base_array[x, y]
+                        #perimeter_matrix[cid_array[i+ele_ord, j+ele_ord],cid_array[x, y]] += 1
+                        #intensity_matrix[cid_array[i+ele_ord, j+ele_ord],cid_array[x, y]] += base_array[x, y]
+                        
+                        cell_neigh_dict = neighbour_cells_dict.get(cid_array[i+ele_ord,j+ele_ord], dict())
+                        
+                        # TODO named tuple instead of list 
+                        cell_neigh_dict[cid_array[x,y]] = cell_neigh_dict.get(cid_array[x,y], np.zeros((2))) + [1, (base_array[x,y]+base_array[i+ele_ord,j+ele_ord])]
+                        neighbour_cells_dict[cid_array[i+ele_ord,j+ele_ord]] = cell_neigh_dict
+                        #print cid_array[i+ele_ord,j+ele_ord]
+                        x_y_array[i+ele_ord, j+ele_ord] = cid_array[x,y]
+                        
+        for cell_id, neigh_dict in neighbour_cells_dict.iteritems():
+            for neigh_id, array in neigh_dict.iteritems():
+                array[1] = array[1]/array[0]
+    
+        for i in range(perimeter_array.shape[0]):
+            for j in range(perimeter_array.shape[1]):
+                if x_y_array[i,j] != 0:
+                    perimeter_array[i,j] = neighbour_cells_dict[int(cid_array[i,j])][int(x_y_array[i,j])][1]
+        
+        plt.imshow(perimeter_array, alpha=0.5)
+        plt.imshow(base_array, alpha = 0.5, cmap = 'Greys')
+    
+        plt.show()
 
 def test_background():
     def make_rgb(row):
