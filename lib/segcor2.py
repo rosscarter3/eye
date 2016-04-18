@@ -18,6 +18,191 @@ import datetime as dt
 
 from segmentation import Segmentation
 
+class View(object):
+    def __init__(self, wx, wy, imx, imy):
+        self._zoom_level = 0
+        self.windowx = wx
+        self.windowy = wy
+        self.imy = imy
+        self.imx = imx
+        self._sizes = [(wx, wy), (wx/2, wy/2), (wx/4, wy/4)]
+        self._x = 0
+        self._y = 0
+
+    def current(self):
+        """Return the current location and zoom."""
+        return self._x, self._y, self._sizes[self._zoom_level]
+
+    def image_coordinate(self, wx, wy):
+        """Return coordinate in image space."""
+        mod_factor = self._zoom_level * 2
+        if mod_factor == 0:
+            return self._x + wx, self._y + wy
+        ix = wx // mod_factor
+        iy = wy // mod_factor
+
+        return self._x + ix, self._y + iy
+
+class Viewer(object):
+    """Basic viewer."""
+
+    def __init__(self, images, segmentation, directory):
+        
+        def now_str():
+            return dt.datetime.now().strftime('%Y%m%d%H%M%S')
+            
+        self._images = images
+        self.origin_path = images[0]
+        
+        self._view = View(1536, 1024, segmentation.id_ar.shape[1],
+                          segmentation.id_ar.shape[0])
+                          
+        SDL_Init(SDL_INIT_VIDEO)
+        
+        self.window = SDL_CreateWindow(b"Image Viewer",
+                                       SDL_WINDOWPOS_CENTERED,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       self._view.windowx,
+                                       self._view.windowy,
+                                       SDL_WINDOW_SHOWN)
+
+        self.renderer = SDL_CreateRenderer(self.window, -1, 0)
+        self.display_rect = SDL_Rect(0, 0, self._view.windowx,
+                                     self._view.windowy)
+        self.zoom_rect = SDL_Rect(0, 0, self._view.windowx, self._view.windowy)
+        self.update_image()
+        self.segmentation = segmentation
+        self.directory = directory
+        self.fn = 'merges_{}.txt'.format(now_str())
+        image_name = os.path.basename(self._images[0])
+        self.outpath = self.origin_path + 'RGB_corrected_{}.png'.format(now_str())
+        self.im_name = '{}_corrected_{}.png'.format(image_name, now_str())
+        self.fp = os.path.join(self.directory, self.fn)
+        
+        self.run()
+
+    def update_image(self):
+        """Display the next image and update the window title."""
+
+        fpath = self._images[0]
+        SDL_SetWindowTitle(self.window,
+                           b"Image Viewer: {}".format(os.path.basename(fpath)))
+        texture = IMG_LoadTexture(self.renderer, fpath)
+
+        self.update_zoom()
+        SDL_RenderClear(self.renderer)
+        SDL_RenderCopy(self.renderer, texture,
+                       self.zoom_rect, self.display_rect)
+        SDL_RenderPresent(self.renderer)
+
+    def set_cell1(self):
+        """ sets cell under the cursor to cell1"""
+        x, y = ctypes.c_int(0), ctypes.c_int(0)
+        sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+
+        ix, iy = self._view.image_coordinate(x.value, y.value)
+
+        self.c1id = self.segmentation.identifier(iy, ix)
+        print "cell1 cid: ", self.c1id
+
+    def set_cell2(self):
+        """ sets cell under the cursor to cell2"""
+        x, y = ctypes.c_int(0), ctypes.c_int(0)
+        sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+        ix, iy = self._view.image_coordinate(x.value, y.value)
+
+        self.c2id = self.segmentation.identifier(iy, ix)
+        print "cell2 cid: ", self.c2id
+
+    def set_bcell(self):
+        """ sets cell under the cursor to bcell"""
+        x, y = ctypes.c_int(0), ctypes.c_int(0)
+        sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+        ix, iy = self._view.image_coordinate(x.value, y.value)
+
+        self.bcid = self.segmentation.identifier(iy, ix)
+
+    def mergecells(self, cell1id, cell2id):
+        """Merge two cells.
+
+        sets cell selected by set_cell2 to colour of cell selected
+        by set cell 1
+        """
+        print "Merging... "
+
+        outstring = "%s -> %s\n" % (np.array_str(cell2id),
+                                    np.array_str(cell1id))
+        print outstring
+        with open(self.fp, "a") as op:
+            op.write(outstring)
+
+        merge_path = os.path.join(self.directory, self.im_name)
+        self.segmentation.merge(cell1id, cell2id)
+        self.segmentation.write_colorful_image(merge_path)
+
+        self._images.update_current(merge_path)
+        self.update_image()
+
+        print "Done"
+
+    def set_to_background(self, bcid):
+        """ sets cell selected by set_bcell to black """
+        print "cell: ", bcid, "set to [0  0  0]"
+        outstring = "%s -> [ 0, 0, 0]\n" % (np.array_str(bcid))
+        with open(self.fp, "a") as op:
+            op.write(outstring)
+
+        merge_path = os.path.join(self.directory, self.im_name)
+        self.segmentation.convert_to_background(bcid)
+        self.segmentation.write_colorful_image(merge_path)
+
+        self._images.update_current(merge_path)
+        self.update_image()
+
+    def save(self):
+        """ saves the colourful image as the rgb version """
+        print 'Saved'
+        self.segmentation.write_rgb_image(self.outpath)
+
+    def run(self):
+        """Run the application."""
+        running = True
+        event = SDL_Event()
+        while running:
+
+            keystate = SDL_GetKeyboardState(None)
+            if keystate[sdl2.SDL_SCANCODE_L]:
+                self.move_right()
+            if keystate[sdl2.SDL_SCANCODE_H]:
+                self.move_left()
+            if keystate[sdl2.SDL_SCANCODE_K]:
+                self.move_up()
+            if keystate[sdl2.SDL_SCANCODE_J]:
+                self.move_down()
+
+            while SDL_PollEvent(ctypes.byref(event)) != 0:
+                if event.type == SDL_QUIT:
+                    running = False
+                    break
+                if event.type == SDL_KEYUP:
+                    if event.key.keysym.sym == sdl2.SDLK_y:
+                        pass
+                        # Accept Merge
+                    if event.key.keysym.sym == sdl2.SDLK_n:
+                        # Reject Merge
+                        pass
+
+                if event.type == SDL_MOUSEBUTTONDOWN:
+                    if event.button.button == SDL_BUTTON_LEFT:
+                        ix, iy = self._view.image_coordinate(event.button.x,
+                                                             event.button.y)
+                        cellid = self.segmentation.identifier(iy, ix)
+                        print "x: %i, y: %i, cid: %i" % (ix, iy, cellid)
+
+        SDL_DestroyWindow(self.window)
+        sdl2.ext.quit()
+        return 0
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("seg_im", help="Segmented Image")
@@ -31,11 +216,8 @@ def main():
     intensity_im = Image.open(args.base_im)
     
     segmentation = Segmentation(np.array(rgb_im),np.array(intensity_im))
-    colorful_fn = os.path.join(directory, 'colorful.png')
-    segmentation.write_colorful_image(colorful_fn)
-
-    images = ImageContainer()
-    images.load_images(colorful_fn, args.base_im)
+    
+    images = [args.seg_im, args.base_im]
 
     Viewer(images, segmentation, directory)
     return 0
