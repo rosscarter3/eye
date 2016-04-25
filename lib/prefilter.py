@@ -24,8 +24,15 @@
 
 import sys
 import argparse
+import os.path
 
-from segmentation import rgb2id_array
+import numpy as np
+import PIL
+from PIL import Image
+import matplotlib.pyplot as plt
+import skimage.measure as skim
+
+from segmentation import rgb2id_array, id2mask_array
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
@@ -35,6 +42,23 @@ if __name__ == '__main__':
 
     rgb_im = Image.open(args.seg_im)
     rgb_ar = np.array(rgb_im)
-    
     cid_ar = rgb2id_array(rgb_ar)
-
+    
+    props = skim.regionprops(cid_ar)
+    
+    areas = []
+    
+    for cell in props:
+        if cell.area > 2000:
+            mask = id2mask_array(cid_ar, cell.label)
+            rgb_ar[mask] = (0, 0, 0)
+    
+    im = PIL.Image.fromarray(rgb_ar)
+    
+    seg_file_path = os.path.splitext(args.seg_im)[0] + '_prefiltered.png'
+    im.save(seg_file_path)
+    
+    
+    
+    
+    

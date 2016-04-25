@@ -10,6 +10,8 @@ Usage: `segcor2.py [segmented_image_for_correction] [base_image_for_comparison]`
 
 Loads a segmented image and the image for comparison and algorithmically computes the segmentation quality. Ranks segmented cell boundaries in order of poorness. Displays a window which shows (starting from top left):
 
+![alt text](./screenshot.png "Title")
+
 
 1. The intensity image with the two merge candidates overlaid in red.
 2. The segmented image centred on the same area.
