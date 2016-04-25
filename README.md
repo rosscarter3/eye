@@ -14,7 +14,7 @@ Loads a segmented image and the image for comparison and algorithmically compute
 
 
 1. The intensity image with the two merge candidates overlaid in red.
-2. The segmented image centred on the same area.
+2. The intensity image with the region of interest (ROI) highlighted.
 3. The boundaries image showing the calculated boundary quality. (Blue, low quality. Red, high quality).
 4. A progress pie chart.
 
