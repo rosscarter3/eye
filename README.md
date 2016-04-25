@@ -20,10 +20,10 @@ Loads a segmented image and the image for comparison and algorithmically compute
 To accept the suggested merge (Window 1), press y. This will merge the two cells, write a new segmented image to the asme directory and record the merge. To refuse the suggested merge, press n. The program will move to the next merge candidate without making changes
 
 #### Commands
-| Key                | Command                | Notes                                       |
-| ------------------ | ---------------------- | ------------------------------------------- |
-| y                  | Accept suggested merge |                                             |
-| n                  | Reject suggested merge |                                             |
+| Key                | Command                | Notes                |
+| ------------------ | ---------------------- | ---------------------|
+| y                  | Accept suggested merge |                      |
+| n                  | Reject suggested merge |                      |
 
 ----
 

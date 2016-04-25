@@ -106,7 +106,7 @@ class Segmentation(object):
     def __init__(self, rgb_ar, intensity_ar=0):
         self.rgb_ar = rgb_ar
         self.id_ar = rgb2id_array(self.rgb_ar)
-        self.colorful_ar = id2colorful_array(self.id_ar)
+        # self.colorful_ar = id2colorful_array(self.id_ar)
         self.intensity_ar = intensity_ar
         self.eval_segmentation()
 
