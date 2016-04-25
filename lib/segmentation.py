@@ -1,6 +1,7 @@
 """Module containing a segmentation class."""
 
 import os.path
+import operator
 
 import numpy as np
 import PIL.Image
@@ -107,6 +108,7 @@ class Segmentation(object):
         self.id_ar = rgb2id_array(self.rgb_ar)
         self.colorful_ar = id2colorful_array(self.id_ar)
         self.intensity_ar = intensity_ar
+        self.eval_segmentation()
 
     def write_colorful_image(self, fpath):
         """Write false color image to disk."""
@@ -120,6 +122,9 @@ class Segmentation(object):
         """
         im = PIL.Image.fromarray(self.rgb_ar)
         im.save(fpath)
+        
+    def colourful_ar(self):
+        self.colorful_ar = id2colorful_array(self.id_ar)
 
     def convert_to_background(self, identifier):
         """Convert a region to background."""
@@ -194,10 +199,24 @@ class Segmentation(object):
                 if x_y_array[i,j] != 0:
                     perimeter_array[i,j] = neighbour_cells_dict[int(cid_array[i,j])][int(x_y_array[i,j])][1]
         
-        plt.imshow(perimeter_array, alpha=0.5)
-        plt.imshow(base_array, alpha = 0.5, cmap = 'Greys')
+        self.perimeter_array = perimeter_array
+        self.neighbour_cells_dict = neighbour_cells_dict
+        
+        neighbour_cells_dict = self.neighbour_cells_dict
     
-        plt.show()
+        score_list_dict = {}
+    
+        for cell_id, neighbour_dict in neighbour_cells_dict.iteritems():
+            for neighbour_id, p_list in neighbour_dict.iteritems():
+                #print cell_id, neighbour_id, p_list
+                score_list_dict[p_list[1]] = (cell_id, neighbour_id) 
+    
+    
+        self.sorted_boundary_list = sorted(score_list_dict.items(), key=operator.itemgetter(0))
+        #plt.imshow(perimeter_array, alpha=0.5)
+        #plt.imshow(base_array, alpha = 0.5, cmap = 'Greys')
+    
+        #plt.show()
 
 def test_background():
     def make_rgb(row):
