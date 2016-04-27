@@ -206,7 +206,7 @@ def merger(seg, cell_id1, cell_id2, percentage, merges_name):
 
 
 def return_merges_file_path(seg_im):
-    
+    """generates a unique file name/path for the output file"""
     date_time_string = dt.datetime.now().strftime('%Y%m%d%H%M%S')
     
     name = 'merges_' + date_time_string +  '.txt'
@@ -227,7 +227,7 @@ def return_cell_coordinates(seg, cell_id):
 
 
 def write_merge(file_path, cid1, cid2):
-    
+    """writes the merge to the output file"""
     outstring = str(cid1)+ ' -> ' + str(cid2) + '\n'
     
     with open(file_path, "a") as file_handle:
