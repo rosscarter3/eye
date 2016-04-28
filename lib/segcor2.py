@@ -40,7 +40,6 @@ def main():
     # score_list.sort()
 
     end = int(len(seg.sorted_boundary_list)/5)
-    # end = 500
     i = 0
     for boundary in seg.sorted_boundary_list[0:end]:
         i += 1
@@ -164,7 +163,7 @@ def merger(seg, cell_id1, cell_id2, percentage, merges_name):
     
     ax1.imshow(seg.intensity_ar[ytop:ybottom, xleft:xright],
                cmap='Greys_r', alpha=1)
-    ax1.imshow(mask, alpha=0.5)
+    ax1.imshow(mask, alpha=0.5,cmap = "jet")
     ax1.set_title('Suggested Merge')
     
     ax2.imshow(seg.intensity_ar,cmap = "Greys")
@@ -174,6 +173,8 @@ def merger(seg, cell_id1, cell_id2, percentage, merges_name):
     height = ybottom - ytop
     
     ax2.add_patch(patches.Rectangle((x,y), width, height, facecolor="red", alpha=0.6))
+    ax2.set_xlim([xleft-50, xright+50])
+    ax2.set_ylim([ybottom+50, ytop-50])
     ax2.set_title('ROI')
     
     ax3.imshow(seg.perimeter_array[ytop:ybottom, xleft:xright])
@@ -190,12 +191,9 @@ def merger(seg, cell_id1, cell_id2, percentage, merges_name):
 
     def on_key(event):
         """ matplotlib event handler """
-        # print('you pressed', event.key)
         if event.key == 'y':
-            # print 'merging cells'
-            # seg.merge(cell_id1,cell_id2)
+
             write_merge(merges_name, cell_id1, cell_id2)
-            #seg.write_rgb_image(directory + '.png')
             plt.close()
         if event.key == 'n':
             plt.close()
@@ -244,11 +242,11 @@ def return_cell_masks(segmentation, cell_id1, cell_id2):
     xmax = max(max(points1[1]), max(points2[1]))
     xmin = min(min(points1[1]), min(points2[1]))
 
-    cell_mask = np.in1d(segmentation.id_ar[ymin:ymax, xmin:xmax],
-                        [cell_id1, cell_id2]).reshape([ymax - ymin,
-                                                       xmax - xmin])
-
-    return cell_mask
+    cell_mask = np.zeros(segmentation.id_ar.shape)
+    cell_mask[points1[0],points1[1]] = 3
+    cell_mask[points2[0],points2[1]] = 5
+    
+    return cell_mask[ymin:ymax, xmin:xmax]
 
 
 if __name__ == "__main__":

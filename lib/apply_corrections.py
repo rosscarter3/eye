@@ -63,13 +63,13 @@ class Corrector(object):
     def return_mask_and_color(self):
         """Return mask array."""
         mask = np.zeros(self.id_arr.shape, dtype=bool)
-        array_coords_cid2 = np.where(self.id_arr == self.cell_id2)
-        mask[array_coords_cid2] = True
-        
         array_coords_cid1 = np.where(self.id_arr == self.cell_id1)
+        mask[array_coords_cid1] = True
+        
+        array_coords_cid2 = np.where(self.id_arr == self.cell_id2)
         #print array_coords_cid1
-        color = self.im_arr[array_coords_cid1]
-        print color[0]
+        color = self.im_arr[array_coords_cid2]
+        #print color[0]
         return mask, color[0]
 
 def parse_line(string):

@@ -187,7 +187,6 @@ class Segmentation(object):
                         # TODO named tuple instead of list 
                         cell_neigh_dict[cid_array[x,y]] = cell_neigh_dict.get(cid_array[x,y], np.zeros((2))) + [1, (base_array[x,y]+base_array[i+ele_ord,j+ele_ord])]
                         neighbour_cells_dict[cid_array[i+ele_ord,j+ele_ord]] = cell_neigh_dict
-                        #print cid_array[i+ele_ord,j+ele_ord]
                         x_y_array[i+ele_ord, j+ele_ord] = cid_array[x,y]
                         
         for cell_id, neigh_dict in neighbour_cells_dict.iteritems():
@@ -208,15 +207,10 @@ class Segmentation(object):
     
         for cell_id, neighbour_dict in neighbour_cells_dict.iteritems():
             for neighbour_id, p_list in neighbour_dict.iteritems():
-                #print cell_id, neighbour_id, p_list
                 score_list_dict[p_list[1]] = (cell_id, neighbour_id) 
     
-    
         self.sorted_boundary_list = sorted(score_list_dict.items(), key=operator.itemgetter(0))
-        #plt.imshow(perimeter_array, alpha=0.5)
-        #plt.imshow(base_array, alpha = 0.5, cmap = 'Greys')
-    
-        #plt.show()
+
 
 def test_background():
     def make_rgb(row):
