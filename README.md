@@ -1,5 +1,5 @@
 # README
-`./lib/segcor.py` and `./lib/segcor2.py` generate the files `merges(time).txt` which can be applied to the uncorrected image with `apply_corrections.py` to generate a corrected segmented image.
+`./lib/segcor2.py` generate the files `merges_(time).txt` which can be applied to the uncorrected image with `./lib/apply_corrections.py` to generate a corrected segmented image.
 
 ----
 
@@ -10,7 +10,7 @@ Usage: `segcor2.py [segmented_image_for_correction] [base_image_for_comparison]`
 
 Loads a segmented image and the image for comparison and algorithmically computes the segmentation quality. Ranks segmented cell boundaries in order of poorness. Displays a window which shows (starting from top left):
 
-![alt text](./screenshot.png "Title")
+![alt text](./screenshot.png =800x)
 
 
 1. The intensity image with the two merge candidates overlaid in red.
@@ -28,8 +28,14 @@ To accept the suggested merge (Window 1), press y. This will merge the two cells
 | n                  | Reject suggested merge |                      |
 
 ----
+## Apply Corrections
+Located at: `./lib/apply_corrections.py` 
 
-## SegCor
+Usage: `python apply_corrections.py [image_to_be_corrected] [corrections_file]`
+
+----
+
+## SegCor (legacy, not recommended)
 Located at: `./lib/segcor.py`
 
 Usage: `segcor.py [segmented_image_for_correction] [base_image_for_comparison]`
@@ -52,9 +58,4 @@ Usage: `segcor.py [segmented_image_for_correction] [base_image_for_comparison]`
 | s                  | Save an RGB image      | RGB values denotes cell ID                  |
 
 ----
-
-## Apply Corrections
-Located at: `./lib/apply_corrections.py` 
-
-Usage: `python apply_corrections.py [image_to_be_corrected] [corrections_file]`
 

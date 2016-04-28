@@ -212,8 +212,7 @@ def return_merges_file_path(seg_im):
     name = 'merges_' + date_time_string +  '.txt'
     
     return os.path.join(os.path.dirname(seg_im), name)
-    
-    
+
 
 def return_cell_coordinates(seg, cell_id):
     """ returns the bounding box of the cell 'cell_id' """
@@ -228,7 +227,7 @@ def return_cell_coordinates(seg, cell_id):
 
 def write_merge(file_path, cid1, cid2):
     """writes the merge to the output file"""
-    outstring = str(cid1)+ ' -> ' + str(cid2) + '\n'
+    outstring = str(cid1)+ ',' + str(cid2) + '\n'
     
     with open(file_path, "a") as file_handle:
             file_handle.write(outstring)
